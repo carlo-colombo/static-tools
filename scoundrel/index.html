@@ -93,8 +93,8 @@
 
         #room-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
             margin-top: 5px;
         }
 
@@ -106,7 +106,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.6);
             cursor: pointer;
             position: relative;
@@ -133,7 +133,7 @@
         }
 
         .card .suit {
-            font-size: 2.2rem;
+            font-size: 1.8rem;
         }
 
         .card.red, .mini-card.red { color: var(--accent-color); text-shadow: 0 0 2px rgba(169, 50, 38, 0.5); }
@@ -267,11 +267,6 @@
         .modal-content p { font-size: 1.1rem; line-height: 1.5; }
         .modal-content button { background: var(--potion-color); color: white; border: none; margin-top: 15px; }
 
-        @media (min-width: 450px) {
-            #room-container {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
 
         .hidden { display: none !important; }
     </style>
