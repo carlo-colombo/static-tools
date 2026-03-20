@@ -47,8 +47,27 @@
     <div class="container">
         <h1>Scoundrel</h1>
         <p>A Single Player Rogue-like Card Game by Zach Gage and Kurt Bieg.</p>
-        <a href="scoundrel/">Play Scoundrel</a>
-        <a href="the-mind/" style="background-color: #e94560;">Play The Mind</a>
+        <div style="display: flex; justify-content: center; gap: 10px;">
+            <a href="scoundrel/">Play Scoundrel</a>
+            <a href="the-mind/" style="background-color: #e94560;">Play The Mind</a>
+        </div>
+
+        <div id="leaderboard-container" style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 1rem;">
+            <h3 style="color: #2c3e50;">Scoundrel Top 10</h3>
+            <table id="leaderboard-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid #eee;">
+                        <th style="padding: 8px;">Rank</th>
+                        <th style="padding: 8px;">Score</th>
+                        <th style="padding: 8px;">Date</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <tr><td colspan="3">No scores yet.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
         <div style="margin-top: 2rem;">
             <button id="clear-cache" style="background: none; border: none; color: #7f8c8d; text-decoration: underline; cursor: pointer; font-size: 0.8rem;">Clear Cache & Update</button>
         </div>
@@ -69,6 +88,30 @@
             }
             window.location.reload();
         });
+
+        function renderLeaderboard() {
+            const scores = JSON.parse(localStorage.getItem('scoundrel-leaderboard') || '[]');
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+
+            if (scores.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3">No scores yet. Complete a game!</td></tr>';
+                return;
+            }
+
+            scores.forEach((entry, index) => {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = "1px solid #eee";
+                tr.innerHTML = `
+                    <td style="padding: 8px;">${index + 1}</td>
+                    <td style="padding: 8px;">${entry.score}</td>
+                    <td style="padding: 8px;">${entry.date}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.addEventListener('load', renderLeaderboard);
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

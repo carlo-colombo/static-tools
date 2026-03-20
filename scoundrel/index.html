@@ -340,6 +340,22 @@
     </header>
 
     <div id="game-container">
+        <div id="leaderboard-container">
+            <h3>Top 10 Leaderboard</h3>
+            <table id="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Score</th>
+                        <th>Date & Time</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Scores will be injected here -->
+                </tbody>
+            </table>
+        </div>
+
         <div id="stats-bar">
             <div class="stat-item">HP<br><span id="hp-val">20</span>/20</div>
             <div class="stat-item">Dungeon<br><span id="dungeon-count">44</span></div>
@@ -378,22 +394,6 @@
             <p id="modal-score" style="font-weight: bold; font-size: 1.4rem;"></p>
             <button id="play-again-btn">New Game</button>
         </div>
-    </div>
-
-    <div id="leaderboard-container">
-        <h3>Top 10 Leaderboard</h3>
-        <table id="leaderboard-table">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Score</th>
-                    <th>Date & Time</th>
-                </tr>
-            </thead>
-            <tbody id="leaderboard-body">
-                <!-- Scores will be injected here -->
-            </tbody>
-        </table>
     </div>
 
     <script>
