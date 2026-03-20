@@ -65,6 +65,24 @@
             color: var(--stats-text);
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .home-link {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--stats-text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .home-link:hover {
+            opacity: 1;
         }
 
         #game-container {
@@ -273,6 +291,7 @@
 </head>
 <body>
     <header>
+        <a href="../" class="home-link">← Hub</a>
         <h1>Scoundrel</h1>
     </header>
 

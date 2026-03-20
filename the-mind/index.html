@@ -38,6 +38,26 @@
             background: var(--card-bg);
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             z-index: 10;
+            position: relative;
+        }
+
+        .home-link {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .home-link:hover {
+            opacity: 1;
         }
 
         h1 { margin: 0; font-size: 1.2rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-color); }
@@ -262,6 +282,7 @@
 </head>
 <body>
     <header>
+        <a href="../" class="home-link">← Hub</a>
         <h1>The Mind</h1>
     </header>
 
