@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scoundrel - Card Game</title>
+    <style>
+        :root {
+            --bg-color: #2c3e50;
+            --card-bg: #ecf0f1;
+            --text-color: #333;
+            --accent-color: #e74c3c;
+            --stats-bg: #34495e;
+            --stats-text: #fff;
+            --monster-color: #2c3e50;
+            --weapon-color: #2980b9;
+            --potion-color: #27ae60;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--stats-bg);
+            color: var(--stats-text);
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            padding: 15px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background-color: var(--stats-bg);
+            color: var(--stats-text);
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        #room-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 5px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            aspect-ratio: 2/3;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.2s, opacity 0.3s;
+            user-select: none;
+            border: 2px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card.empty {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            box-shadow: none;
+            cursor: default;
+            color: transparent;
+        }
+
+        .card.empty:hover {
+            transform: none;
+        }
+
+        .card .suit {
+            font-size: 2.2rem;
+        }
+
+        .card.red { color: var(--accent-color); }
+        .card.black { color: #000; }
+
+        /* Card Types specific colors for easier identification */
+        .card.monster { border-color: var(--monster-color); }
+        .card.weapon { border-color: var(--weapon-color); }
+        .card.potion { border-color: var(--potion-color); }
+
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #avoid-btn {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        #avoid-btn:disabled {
+            background-color: #7f8c8d;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        #reset-btn {
+            background-color: #c0392b;
+            color: white;
+        }
+
+        #message-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            min-height: 3em;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        #weapon-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .weapon-display {
+            display: flex;
+            gap: -20px; /* Staggered effect */
+            width: 100%;
+            justify-content: center;
+            padding: 5px;
+            min-height: 80px;
+        }
+
+        .mini-card {
+            width: 50px;
+            height: 75px;
+            background: white;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            border: 1px solid #ccc;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-right: -25px; /* Stagger */
+            transition: transform 0.2s;
+        }
+
+        .mini-card:last-child {
+            margin-right: 0;
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 85%;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .modal-content h2 { margin-top: 0; color: var(--bg-color); }
+        .modal-content p { font-size: 1.1rem; line-height: 1.5; }
+        .modal-content button { background-color: var(--potion-color); color: white; margin-top: 15px; }
+
+        @media (min-width: 450px) {
+            #room-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Scoundrel</h1>
+    </header>
+
+    <div id="game-container">
+        <div id="stats-bar">
+            <div class="stat-item">HP<br><span id="hp-val">20</span>/20</div>
+            <div class="stat-item">Dungeon<br><span id="dungeon-count">44</span></div>
+            <div class="stat-item">Room<br><span id="room-step">0/3</span></div>
+        </div>
+
+        <div id="message-box">
+            Welcome to the Dungeon. Take 3 cards to complete a room.
+        </div>
+
+        <div id="room-container">
+            <div class="card empty" id="card-0"></div>
+            <div class="card empty" id="card-1"></div>
+            <div class="card empty" id="card-2"></div>
+            <div class="card empty" id="card-3"></div>
+        </div>
+
+        <div id="weapon-area">
+            <div>Equipped Weapon & Slain Monsters</div>
+            <div id="weapon-slots" class="weapon-display">
+                <div class="mini-card empty-weapon" style="background:transparent; border:1px dashed #aaa; color:#aaa; margin-right:0">None</div>
+            </div>
+            <div id="weapon-durability" style="font-size: 0.8rem; color: #ccc; margin-top: 5px;"></div>
+        </div>
+
+        <div id="controls">
+            <button id="avoid-btn">Avoid Room</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+    </div>
+
+    <div id="game-over-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Game Over</h2>
+            <p id="modal-msg"></p>
+            <p id="modal-score" style="font-weight: bold; font-size: 1.4rem;"></p>
+            <button id="play-again-btn">New Game</button>
+        </div>
+    </div>
+
+    <script>
+        const SUITS = {
+            SPADES: '♠',
+            CLUBS: '♣',
+            DIAMONDS: '♦',
+            HEARTS: '♥'
+        };
+
+        const CARD_TYPES = {
+            MONSTER: 'monster',
+            WEAPON: 'weapon',
+            POTION: 'potion'
+        };
+
+        const VALUE_MAP = {
+            '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10,
+            'J': 11, 'Q': 12, 'K': 13, 'A': 14
+        };
+
+        let gameState = {
+            hp: 20,
+            dungeon: [],
+            room: [],
+            roomSelectionCount: 0,
+            lastRoomAvoided: false,
+            potionUsedThisTurn: false,
+            equippedWeapon: null,
+            slainMonsters: [],
+            gameOver: false,
+            score: 0,
+            lastCardWasPotionValue: 0
+        };
+
+        function createDeck() {
+            const deck = [];
+            const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+            const suits = Object.values(SUITS);
+
+            for (const suit of suits) {
+                for (const val of values) {
+                    // Filter: Remove Red Face Cards (Hearts/Diamonds J, Q, K) and Red Aces (Hearts/Diamonds A)
+                    const isRed = (suit === SUITS.HEARTS || suit === SUITS.DIAMONDS);
+                    const isFaceOrAce = ['J', 'Q', 'K', 'A'].includes(val);
+
+                    if (isRed && isFaceOrAce) continue;
+
+                    let type;
+                    if (suit === SUITS.SPADES || suit === SUITS.CLUBS) {
+                        type = CARD_TYPES.MONSTER;
+                    } else if (suit === SUITS.DIAMONDS) {
+                        type = CARD_TYPES.WEAPON;
+                    } else if (suit === SUITS.HEARTS) {
+                        type = CARD_TYPES.POTION;
+                    }
+
+                    deck.push({
+                        suit,
+                        val,
+                        num: VALUE_MAP[val],
+                        type,
+                        isRed
+                    });
+                }
+            }
+            return deck;
+        }
+
+        function shuffle(deck) {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+            return deck;
+        }
+
+        function updateUI() {
+            document.getElementById('hp-val').textContent = gameState.hp;
+            document.getElementById('dungeon-count').textContent = gameState.dungeon.length;
+            document.getElementById('room-step').textContent = `${gameState.roomSelectionCount}/3`;
+
+            // Update room cards
+            for (let i = 0; i < 4; i++) {
+                const cardEl = document.getElementById(`card-${i}`);
+                const card = gameState.room[i];
+
+                if (card) {
+                    cardEl.className = `card ${card.isRed ? 'red' : 'black'} ${card.type}`;
+                    cardEl.innerHTML = `<div>${card.val}</div><div class="suit">${card.suit}</div>`;
+                    cardEl.onclick = () => handleCardClick(i);
+                } else {
+                    cardEl.className = 'card empty';
+                    cardEl.innerHTML = '';
+                    cardEl.onclick = null;
+                }
+            }
+
+            // Update Weapon Area
+            const weaponSlots = document.getElementById('weapon-slots');
+            const durabilityInfo = document.getElementById('weapon-durability');
+
+            if (gameState.equippedWeapon) {
+                let html = `<div class="mini-card ${gameState.equippedWeapon.isRed ? 'red' : 'black'}">
+                    <div>${gameState.equippedWeapon.val}</div><div>${gameState.equippedWeapon.suit}</div>
+                </div>`;
+
+                gameState.slainMonsters.forEach(m => {
+                    html += `<div class="mini-card ${m.isRed ? 'red' : 'black'}">
+                        <div>${m.val}</div><div>${m.suit}</div>
+                    </div>`;
+                });
+                weaponSlots.innerHTML = html;
+
+                const lastSlain = gameState.slainMonsters.length > 0
+                    ? gameState.slainMonsters[gameState.slainMonsters.length - 1].num
+                    : Infinity;
+                durabilityInfo.textContent = `Can slay monster <= ${lastSlain === Infinity ? 'any' : lastSlain}`;
+            } else {
+                weaponSlots.innerHTML = '<div class="mini-card empty-weapon" style="background:transparent; border:1px dashed #aaa; color:#aaa; margin-right:0">None</div>';
+                durabilityInfo.textContent = '';
+            }
+
+            // Avoid button state
+            const avoidBtn = document.getElementById('avoid-btn');
+            avoidBtn.disabled = gameState.lastRoomAvoided || gameState.roomSelectionCount > 0 || gameState.room.filter(c => c).length < 4;
+        }
+
+        function initGame() {
+            const deck = createDeck();
+            gameState = {
+                hp: 20,
+                dungeon: shuffle(deck),
+                room: [],
+                roomSelectionCount: 0,
+                lastRoomAvoided: false,
+                potionUsedThisTurn: false,
+                equippedWeapon: null,
+                slainMonsters: [],
+                gameOver: false,
+                score: 0,
+                lastCardWasPotionValue: 0
+            };
+
+            document.getElementById('game-over-modal').style.display = 'none';
+            drawRoom();
+            updateUI();
+            setMessage("Welcome to the Dungeon. Take 3 cards to complete a room.");
+        }
+
+        function drawRoom() {
+            // Refill room until it has 4 cards or dungeon is empty
+            for (let i = 0; i < 4; i++) {
+                if (!gameState.room[i] && gameState.dungeon.length > 0) {
+                    gameState.room[i] = gameState.dungeon.shift();
+                }
+            }
+            gameState.roomSelectionCount = 0;
+            gameState.potionUsedThisTurn = false;
+        }
+
+        function avoidRoom() {
+            if (gameState.lastRoomAvoided || gameState.roomSelectionCount > 0 || gameState.room.filter(c => c).length < 4) {
+                return;
+            }
+
+            // Put all room cards at the bottom of the dungeon
+            const cardsToMove = gameState.room.filter(c => c);
+            gameState.dungeon.push(...cardsToMove);
+            gameState.room = [null, null, null, null];
+            gameState.lastRoomAvoided = true;
+
+            drawRoom();
+            updateUI();
+            setMessage("Room avoided. You cannot avoid the next room.");
+            checkGameOver();
+        }
+
+        function handleCardClick(index) {
+            if (gameState.gameOver) return;
+            const card = gameState.room[index];
+            if (!card) return;
+
+            const handled = processCard(card, index);
+            if (handled) {
+                gameState.roomSelectionCount++;
+                if (gameState.roomSelectionCount === 3) {
+                    setTimeout(completeTurn, 500);
+                }
+            }
+            updateUI();
+            checkGameOver();
+        }
+
+        function processCard(card, index) {
+            gameState.lastCardWasPotionValue = 0;
+            if (card.type === CARD_TYPES.POTION) {
+                if (gameState.potionUsedThisTurn) {
+                    setMessage("Already used a potion this turn. Discarded.");
+                } else {
+                    const heal = card.num;
+                    const oldHp = gameState.hp;
+                    if (oldHp === 20) {
+                        gameState.lastCardWasPotionValue = heal;
+                    }
+                    gameState.hp = Math.min(20, gameState.hp + heal);
+                    gameState.potionUsedThisTurn = true;
+                    setMessage(`Healed for ${gameState.hp - oldHp}. HP is now ${gameState.hp}.`);
+                }
+                gameState.room[index] = null;
+                return true;
+            }
+
+            if (card.type === CARD_TYPES.WEAPON) {
+                gameState.equippedWeapon = card;
+                gameState.slainMonsters = [];
+                gameState.room[index] = null;
+                setMessage(`Equipped ${card.val} of ${card.suit} weapon.`);
+                return true;
+            }
+
+            if (card.type === CARD_TYPES.MONSTER) {
+                // Determine if we can use weapon
+                let canUseWeapon = false;
+                if (gameState.equippedWeapon) {
+                    const lastSlainValue = gameState.slainMonsters.length > 0
+                        ? gameState.slainMonsters[gameState.slainMonsters.length - 1].num
+                        : Infinity;
+
+                    if (card.num <= lastSlainValue) {
+                        canUseWeapon = true;
+                    }
+                }
+
+                if (canUseWeapon) {
+                    const damage = Math.max(0, card.num - gameState.equippedWeapon.num);
+                    gameState.hp -= damage;
+                    gameState.slainMonsters.push(card);
+                    setMessage(`Fought monster with weapon. Took ${damage} damage.`);
+                } else {
+                    gameState.hp -= card.num;
+                    setMessage(`Fought monster barehanded. Took ${card.num} damage.`);
+                }
+                gameState.room[index] = null;
+                return true;
+            }
+
+            return false;
+        }
+
+        function checkGameOver() {
+            const hasRemainingMoves = gameState.room.some(c => c) || gameState.dungeon.length > 0;
+
+            if (gameState.hp <= 0) {
+                gameState.gameOver = true;
+                // Loss scoring: subtract values of remaining monsters in dungeon from negative score
+                const allCards = [...gameState.dungeon, ...gameState.room.filter(c => c)];
+                const monsterSum = allCards
+                    .filter(c => c.type === CARD_TYPES.MONSTER)
+                    .reduce((sum, c) => sum + c.num, 0);
+
+                // Rules say: If life reached 0, find remaining monsters, and subtract from life (which is already 0 or less)
+                // Actually the rule says "subtract their values from your life, this negative value is your score."
+                gameState.score = gameState.hp - monsterSum;
+                showGameOver("DEATH COMES TO ALL", `You were overwhelmed by the darkness.`, gameState.score);
+            } else if (!hasRemainingMoves) {
+                gameState.gameOver = true;
+                // Win scoring: your positive life, or if life is 20 and last card was potion, life + value of potion
+                gameState.score = gameState.hp + gameState.lastCardWasPotionValue;
+                showGameOver("DUNGEON CONQUERED", `You've made it through!`, gameState.score);
+            }
+        }
+
+        function showGameOver(title, msg, score) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-msg').textContent = msg;
+            document.getElementById('modal-score').textContent = `Score: ${score}`;
+            document.getElementById('game-over-modal').style.display = 'flex';
+        }
+
+        function completeTurn() {
+            gameState.lastRoomAvoided = false;
+            drawRoom();
+            updateUI();
+            setMessage("New room! Take 3 cards.");
+            checkGameOver();
+        }
+
+        function setMessage(msg) {
+            document.getElementById('message-box').textContent = msg;
+        }
+
+        document.getElementById('avoid-btn').onclick = avoidRoom;
+        document.getElementById('reset-btn').onclick = initGame;
+        document.getElementById('play-again-btn').onclick = initGame;
+
+        // Start the game on load
+        window.onload = initGame;
+    </script>
+</body>
+</html>
