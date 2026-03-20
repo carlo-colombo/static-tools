@@ -106,8 +106,8 @@
             font-size: 2.2rem;
         }
 
-        .card.red { color: var(--accent-color); }
-        .card.black { color: #000; }
+        .card.red, .mini-card.red { color: var(--accent-color); }
+        .card.black, .mini-card.black { color: #000; }
 
         /* Card Types specific colors for easier identification */
         .card.monster { border-color: var(--monster-color); }
@@ -193,6 +193,7 @@
             box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             margin-right: -25px; /* Stagger */
             transition: transform 0.2s;
+            color: #000; /* Default text color for mini-cards */
         }
 
         .mini-card:last-child {
