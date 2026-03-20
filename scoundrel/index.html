@@ -608,7 +608,7 @@
         }
 
         function avoidRoom() {
-            if (gameState.lastRoomAvoided || gameState.roomSelectionCount > 0 || gameState.room.filter(c => c).length < 4) {
+            if (gameState.gameOver || gameState.lastRoomAvoided || gameState.roomSelectionCount > 0 || gameState.room.filter(c => c).length < 4) {
                 return;
             }
 
@@ -697,6 +697,7 @@
         }
 
         function checkGameOver() {
+            if (gameState.gameOver) return;
             const hasRemainingMoves = gameState.room.some(c => c) || gameState.dungeon.length > 0;
 
             if (gameState.hp <= 0) {
@@ -760,6 +761,7 @@
         }
 
         function completeTurn() {
+            if (gameState.gameOver) return;
             gameState.lastRoomAvoided = false;
             drawRoom();
             updateUI();
