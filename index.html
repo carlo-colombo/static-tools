@@ -49,8 +49,27 @@
         <p>A Single Player Rogue-like Card Game by Zach Gage and Kurt Bieg.</p>
         <a href="scoundrel/">Play Scoundrel</a>
         <a href="the-mind/" style="background-color: #e94560;">Play The Mind</a>
+        <div style="margin-top: 2rem;">
+            <button id="clear-cache" style="background: none; border: none; color: #7f8c8d; text-decoration: underline; cursor: pointer; font-size: 0.8rem;">Clear Cache & Update</button>
+        </div>
     </div>
     <script>
+        document.getElementById('clear-cache').addEventListener('click', async () => {
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
+                }
+            }
+            if ('caches' in window) {
+                const names = await caches.keys();
+                for (let name of names) {
+                    await caches.delete(name);
+                }
+            }
+            window.location.reload();
+        });
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
