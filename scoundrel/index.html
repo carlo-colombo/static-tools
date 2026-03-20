@@ -301,6 +301,18 @@
             'J': 11, 'Q': 12, 'K': 13, 'A': 14
         };
 
+        const MASTER_DECK = createDeck();
+
+        function cardToId(card) {
+            if (!card) return null;
+            return MASTER_DECK.findIndex(c => c.suit === card.suit && c.val === card.val);
+        }
+
+        function idToCard(id) {
+            if (id === null || id === undefined) return null;
+            return MASTER_DECK[id];
+        }
+
         let gameState = {
             hp: 20,
             dungeon: [],
@@ -312,7 +324,8 @@
             slainMonsters: [],
             gameOver: false,
             score: 0,
-            lastCardWasPotionValue: 0
+            lastCardWasPotionValue: 0,
+            message: ""
         };
 
         function createDeck() {
@@ -355,6 +368,36 @@
                 [deck[i], deck[j]] = [deck[j], deck[i]];
             }
             return deck;
+        }
+
+        function saveStateToUrl() {
+            const stateCopy = {
+                ...gameState,
+                dungeon: gameState.dungeon.map(cardToId),
+                room: gameState.room.map(cardToId),
+                equippedWeapon: cardToId(gameState.equippedWeapon),
+                slainMonsters: gameState.slainMonsters.map(cardToId)
+            };
+            const serialized = btoa(JSON.stringify(stateCopy));
+            history.replaceState(null, "", "#" + serialized);
+        }
+
+        function loadStateFromUrl() {
+            const hash = window.location.hash.substring(1);
+            if (!hash) return null;
+            try {
+                const stateCopy = JSON.parse(atob(hash));
+                return {
+                    ...stateCopy,
+                    dungeon: stateCopy.dungeon.map(idToCard),
+                    room: stateCopy.room.map(idToCard),
+                    equippedWeapon: idToCard(stateCopy.equippedWeapon),
+                    slainMonsters: stateCopy.slainMonsters.map(idToCard)
+                };
+            } catch (e) {
+                console.error("Failed to load state from URL", e);
+                return null;
+            }
         }
 
         function updateUI() {
@@ -406,28 +449,36 @@
             // Avoid button state
             const avoidBtn = document.getElementById('avoid-btn');
             avoidBtn.disabled = gameState.lastRoomAvoided || gameState.roomSelectionCount > 0 || gameState.room.filter(c => c).length < 4;
+
+            saveStateToUrl();
         }
 
         function initGame() {
-            const deck = createDeck();
-            gameState = {
-                hp: 20,
-                dungeon: shuffle(deck),
-                room: [],
-                roomSelectionCount: 0,
-                lastRoomAvoided: false,
-                potionUsedThisTurn: false,
-                equippedWeapon: null,
-                slainMonsters: [],
-                gameOver: false,
-                score: 0,
-                lastCardWasPotionValue: 0
-            };
+            const savedState = loadStateFromUrl();
+            if (savedState) {
+                gameState = savedState;
+            } else {
+                const deck = createDeck();
+                gameState = {
+                    hp: 20,
+                    dungeon: shuffle(deck),
+                    room: [],
+                    roomSelectionCount: 0,
+                    lastRoomAvoided: false,
+                    potionUsedThisTurn: false,
+                    equippedWeapon: null,
+                    slainMonsters: [],
+                    gameOver: false,
+                    score: 0,
+                    lastCardWasPotionValue: 0,
+                    message: "Welcome to the Dungeon. Take 3 cards to complete a room."
+                };
+                drawRoom();
+            }
 
             document.getElementById('game-over-modal').style.display = 'none';
-            drawRoom();
             updateUI();
-            setMessage("Welcome to the Dungeon. Take 3 cards to complete a room.");
+            setMessage(gameState.message);
         }
 
         function drawRoom() {
@@ -569,12 +620,19 @@
         }
 
         function setMessage(msg) {
+            gameState.message = msg;
             document.getElementById('message-box').textContent = msg;
         }
 
         document.getElementById('avoid-btn').onclick = avoidRoom;
-        document.getElementById('reset-btn').onclick = initGame;
-        document.getElementById('play-again-btn').onclick = initGame;
+        document.getElementById('reset-btn').onclick = () => {
+            history.replaceState(null, "", window.location.pathname);
+            initGame();
+        };
+        document.getElementById('play-again-btn').onclick = () => {
+            history.replaceState(null, "", window.location.pathname);
+            initGame();
+        };
 
         // Start the game on load
         window.onload = initGame;
