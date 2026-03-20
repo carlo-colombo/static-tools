@@ -1,0 +1,10 @@
+{
+  "name": "Scoundrel Game Hub",
+  "short_name": "Scoundrel",
+  "description": "A Single Player Rogue-like Card Game",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f0f2f5",
+  "theme_color": "#2c3e50",
+  "icons": []
+}
