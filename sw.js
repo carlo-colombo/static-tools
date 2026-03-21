@@ -1,10 +1,14 @@
-const CACHE_NAME = 'scoundrel-v1';
+const CACHE_NAME = 'scoundrel-v2';
 const ASSETS = [
   './',
   './index.html',
   './scoundrel/',
   './scoundrel/index.html',
-  './manifest.json'
+  './the-mind/',
+  './the-mind/index.html',
+  './manifest.json',
+  './icon-192.svg',
+  './icon-512.svg'
 ];
 
 self.addEventListener('install', (event) => {
