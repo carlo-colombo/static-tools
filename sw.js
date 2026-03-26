@@ -6,6 +6,8 @@ const ASSETS = [
   './scoundrel/index.html',
   './the-mind/',
   './the-mind/index.html',
+  './split-flap/',
+  './split-flap/index.html',
   './manifest.json',
   './icon-192.svg',
   './icon-512.svg'
