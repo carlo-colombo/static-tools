@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split Flap Display</title>
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#121212">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-color: #0a0a0a;
+            --flap-bg: #1a1a1a;
+            --text-color: #ffffff;
+            --flap-width: 5vw;
+            --flap-height: 8vw;
+            --flap-font-size: 6.5vw;
+            --gap: 0.5vw;
+            --row-gap: 2.5vw;
+            --anim-speed: 0.12s;
+        }
+
+        @media (orientation: portrait) {
+            :root {
+                --flap-width: 5.5vw;
+                --flap-height: 9vw;
+                --flap-font-size: 7.5vw;
+            }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            box-sizing: border-box;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+
+        .home-link, .settings-btn {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+            transition: all 0.2s;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .home-link:hover, .settings-btn:hover {
+            opacity: 1;
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.4);
+        }
+
+        #display {
+            display: flex;
+            flex-direction: column;
+            gap: var(--row-gap);
+            padding: 4vw;
+            background: #050505;
+            border: 20px solid #222;
+            border-radius: 16px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.9), inset 0 0 40px rgba(0,0,0,0.8);
+        }
+
+        .row {
+            display: flex;
+            gap: var(--gap);
+        }
+
+        .flap {
+            position: relative;
+            width: var(--flap-width);
+            height: var(--flap-height);
+            background-color: var(--flap-bg);
+            border-radius: 6px;
+            font-size: var(--flap-font-size);
+            font-weight: 800;
+            perspective: 1000px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .flap div {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            overflow: hidden;
+            background-color: var(--flap-bg);
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+        }
+
+        .flap .top, .flap .leaf-front {
+            top: 0;
+            border-radius: 6px 6px 0 0;
+            z-index: 1;
+            align-items: flex-start;
+        }
+
+        .flap .bottom, .flap .leaf-back {
+            bottom: 0;
+            border-radius: 0 0 6px 6px;
+            z-index: 0;
+            align-items: flex-end;
+        }
+
+        .flap .text {
+            height: var(--flap-height);
+            line-height: var(--flap-height);
+        }
+
+        /* Middle split line */
+        .flap::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: rgba(0,0,0,0.9);
+            z-index: 10;
+            transform: translateY(-50%);
+        }
+
+        .flap .leaf-back .text {
+            transform: rotateX(180deg);
+        }
+
+        .flap .leaf {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            z-index: 2;
+            transform-origin: bottom;
+            transition: transform var(--anim-speed) ease-in;
+            transform-style: preserve-3d;
+            background: none;
+            pointer-events: none;
+        }
+
+        .flap .leaf-front {
+            z-index: 2;
+        }
+
+        .flap .leaf-back {
+            transform: rotateX(-180deg);
+            z-index: 1;
+        }
+
+        .flap .leaf.flipping {
+            transform: rotateX(-180deg);
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            padding: 40px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            border: 1px solid #333;
+        }
+
+        .modal-content h2 { margin: 0; color: #fff; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; }
+        .modal-content label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .modal-content textarea {
+            width: 100%;
+            height: 180px;
+            background: #000;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 15px;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            resize: vertical;
+            outline: none;
+        }
+        .modal-content textarea:focus { border-color: #007bff; }
+        .modal-content input {
+            background: #000;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            outline: none;
+        }
+        .modal-content input:focus { border-color: #007bff; }
+        .modal-content .buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .modal-content button {
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            border: none;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+        #cancel-btn { background: #333; color: #eee; }
+        #cancel-btn:hover { background: #444; }
+        #save-btn { background: #007bff; color: white; }
+        #save-btn:hover { background: #0069d9; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../" class="home-link">← Hub</a>
+        <button class="settings-btn" id="settings-btn">Settings</button>
+    </header>
+
+    <div id="display">
+        <!-- Rows will be injected here -->
+    </div>
+
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <h2>Settings</h2>
+            <div>
+                <label>Display Messages (one per line or use |):</label>
+                <textarea id="messages-input" placeholder="Line 1|Line 2|Line 3"></textarea>
+            </div>
+            <div>
+                <label>Cycle Interval (ms):</label>
+                <input type="number" id="interval-input" value="5000" min="1000" step="500">
+            </div>
+            <div class="buttons">
+                <button id="cancel-btn">Cancel</button>
+                <button id="save-btn">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CHARS = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?@#&-+";
+        const ROW_COUNT = 3;
+        const COL_COUNT = 16;
+
+        class Flap {
+            constructor(el) {
+                this.el = el;
+                this.topText = el.querySelector('.top .text');
+                this.bottomText = el.querySelector('.bottom .text');
+                this.leaf = el.querySelector('.leaf');
+                this.leafFrontText = el.querySelector('.leaf-front .text');
+                this.leafBackText = el.querySelector('.leaf-back .text');
+
+                this.currentChar = ' ';
+                this.targetChar = ' ';
+                this.isFlipping = false;
+
+                this.setInitial(' ');
+            }
+
+            setInitial(char) {
+                this.currentChar = char;
+                this.topText.innerText = char;
+                this.bottomText.innerText = char;
+                this.leafFrontText.innerText = char;
+                this.leafBackText.innerText = char;
+            }
+
+            setChar(char) {
+                char = char.toUpperCase();
+                if (!CHARS.includes(char)) char = '?';
+                this.targetChar = char;
+                this.step();
+            }
+
+            step() {
+                if (this.isFlipping || this.currentChar === this.targetChar) return;
+
+                this.isFlipping = true;
+                const currentIndex = CHARS.indexOf(this.currentChar);
+                const nextIndex = (currentIndex + 1) % CHARS.length;
+                const nextChar = CHARS[nextIndex];
+
+                this.topText.innerText = nextChar;
+                this.leafFrontText.innerText = this.currentChar;
+                this.leafBackText.innerText = nextChar;
+
+                this.leaf.classList.remove('flipping');
+                void this.leaf.offsetWidth;
+                this.leaf.classList.add('flipping');
+
+                setTimeout(() => {
+                    this.leaf.classList.remove('flipping');
+                    this.currentChar = nextChar;
+                    this.bottomText.innerText = nextChar;
+                    this.isFlipping = false;
+                    this.step();
+                }, 120);
+            }
+        }
+
+        const flaps = [];
+        const displayEl = document.getElementById('display');
+
+        function initDisplay() {
+            displayEl.innerHTML = '';
+            flaps.length = 0;
+            for (let r = 0; r < ROW_COUNT; r++) {
+                const rowEl = document.createElement('div');
+                rowEl.className = 'row';
+                const rowFlaps = [];
+                for (let c = 0; c < COL_COUNT; c++) {
+                    const flapEl = document.createElement('div');
+                    flapEl.className = 'flap';
+                    flapEl.innerHTML = `
+                        <div class="bottom"><div class="text"></div></div>
+                        <div class="top"><div class="text"></div></div>
+                        <div class="leaf">
+                            <div class="leaf-front"><div class="text"></div></div>
+                            <div class="leaf-back"><div class="text"></div></div>
+                        </div>
+                    `;
+                    rowEl.appendChild(flapEl);
+                    rowFlaps.push(new Flap(flapEl));
+                }
+                displayEl.appendChild(rowEl);
+                flaps.push(rowFlaps);
+            }
+        }
+
+        let messages = ["WELCOME TO|THE SPLIT FLAP|DISPLAY"];
+        let interval = 5000;
+        let currentMsgIndex = 0;
+        let timer = null;
+
+        function updateDisplay() {
+            const currentMsg = messages[currentMsgIndex] || "";
+            const lines = currentMsg.split('|');
+
+            for (let r = 0; r < ROW_COUNT; r++) {
+                const lineText = (lines[r] || "").padEnd(COL_COUNT, ' ').substring(0, COL_COUNT);
+                for (let c = 0; c < COL_COUNT; c++) {
+                    setTimeout(() => {
+                        flaps[r][c].setChar(lineText[c]);
+                    }, (r * 150) + (c * 30));
+                }
+            }
+
+            currentMsgIndex = (currentMsgIndex + 1) % messages.length;
+            timer = setTimeout(updateDisplay, interval);
+        }
+
+        function saveState() {
+            const state = { m: messages, i: interval };
+            window.location.hash = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+        }
+
+        function loadState() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                try {
+                    const state = JSON.parse(decodeURIComponent(escape(atob(hash))));
+                    if (Array.isArray(state.m)) messages = state.m;
+                    interval = parseInt(state.i) || 5000;
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        const modal = document.getElementById('settings-modal');
+        const msgInput = document.getElementById('messages-input');
+        const intervalInput = document.getElementById('interval-input');
+
+        document.getElementById('settings-btn').onclick = () => {
+            msgInput.value = messages.join('\n');
+            intervalInput.value = interval;
+            modal.style.display = 'flex';
+        };
+
+        document.getElementById('cancel-btn').onclick = () => modal.style.display = 'none';
+
+        document.getElementById('save-btn').onclick = () => {
+            messages = msgInput.value.split('\n').map(m => m.trim()).filter(m => m !== "");
+            interval = Math.max(1000, parseInt(intervalInput.value) || 5000);
+            if (messages.length === 0) messages = [" "];
+            currentMsgIndex = 0;
+            if (timer) clearTimeout(timer);
+            saveState();
+            modal.style.display = 'none';
+            updateDisplay();
+        };
+
+        window.onload = () => {
+            loadState();
+            initDisplay();
+            setTimeout(updateDisplay, 500);
+        };
+
+        window.onhashchange = () => {
+            loadState();
+            currentMsgIndex = 0;
+            if (timer) clearTimeout(timer);
+            updateDisplay();
+        };
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js').catch(err => console.log(err));
+            });
+        }
+    </script>
+</body>
+</html>
