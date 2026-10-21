@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>pcparts - Rig Builder Solo Game</title>
+    <title>pcparts - Wingspan Pocket Rig Builder</title>
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#0f172a">
     <style>
@@ -19,14 +19,11 @@
             --accent-amber: #fbbf24;
             --accent-rose: #f43f5e;
 
-            --processing-color: #ef4444;
-            --memory-color: #3b82f6;
-            --chassis-color: #10b981;
-
             --silicon-color: #38bdf8;
             --power-color: #fbbf24;
             --cooling-color: #a855f7;
             --paste-color: #ec4899;
+            --cable-color: #10b981;
         }
 
         * {
@@ -123,32 +120,59 @@
             margin-top: 2px;
         }
 
-        /* Resource Inventory Bar */
-        .resource-bar {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            align-items: center;
+        /* Nest Actions Bar */
+        .nest-actions-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
             background: var(--panel-bg);
-            padding: 10px 15px;
+            padding: 12px;
             border-radius: 12px;
             border: 1px solid #334155;
-            gap: 15px;
         }
 
-        .resource-pill {
+        .nest-btn {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            border: 1px solid #475569;
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .nest-btn:hover:not(:disabled) {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+        }
+
+        .nest-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .nest-btn-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--accent-blue);
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 0.95rem;
-            font-weight: bold;
-            background: rgba(15, 23, 42, 0.5);
-            padding: 5px 12px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Action Message Log */
+        .nest-btn-desc {
+            font-size: 0.72rem;
+            color: var(--text-sub);
+            text-align: left;
+        }
+
+        /* Action Log */
         #log-box {
             background: rgba(30, 41, 59, 0.8);
             border-left: 4px solid var(--accent-blue);
@@ -162,78 +186,37 @@
             justify-content: space-between;
         }
 
-        /* Habitats Grid */
-        .habitats-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .habitat-row {
+        /* Section Panel */
+        .section-panel {
             background: var(--panel-bg);
             border-radius: 12px;
-            padding: 12px;
-            border: 2px solid transparent;
-            transition: all 0.2s;
-            position: relative;
+            padding: 15px;
+            border: 1px solid #334155;
         }
 
-        .habitat-row.processing { border-color: rgba(239, 68, 68, 0.4); }
-        .habitat-row.memory { border-color: rgba(59, 130, 246, 0.4); }
-        .habitat-row.chassis { border-color: rgba(16, 185, 129, 0.4); }
-
-        .habitat-header {
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .habitat-title {
-            font-size: 1rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .habitat-action-btn {
-            background: linear-gradient(135deg, #38bdf8, #2563eb);
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
-        }
-
-        .habitat-action-btn:hover:not(:disabled) {
-            transform: translateY(-1px);
-            opacity: 0.9;
-        }
-
-        .habitat-action-btn:disabled {
-            background: #475569;
-            color: #94a3b8;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .slots-grid {
+        /* Flock Grid */
+        .flock-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 10px;
             overflow-x: auto;
         }
 
-        /* Card Component Styling */
-        .card-slot {
-            aspect-ratio: 2.5 / 3.5;
-            min-width: 130px;
+        .flock-slot {
+            aspect-ratio: 2.5 / 3.6;
+            min-width: 135px;
             background: rgba(15, 23, 42, 0.6);
             border: 2px dashed #475569;
             border-radius: 10px;
@@ -246,25 +229,12 @@
             transition: all 0.2s;
         }
 
-        .card-slot.installed {
+        .flock-slot.occupied {
             border-style: solid;
             background: var(--card-bg);
             border-color: #64748b;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4);
             justify-content: space-between;
-        }
-
-        .card-slot.empty-cost-badge {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            font-size: 0.68rem;
-            background: rgba(236, 72, 153, 0.2);
-            color: var(--paste-color);
-            padding: 2px 6px;
-            border-radius: 10px;
-            border: 1px solid rgba(236, 72, 153, 0.4);
-            font-weight: bold;
         }
 
         .card-header-row {
@@ -298,6 +268,7 @@
             gap: 3px;
             flex-wrap: wrap;
             margin-top: 4px;
+            color: var(--accent-blue);
         }
 
         .card-effect-desc {
@@ -305,8 +276,8 @@
             color: #cbd5e1;
             line-height: 1.2;
             margin: 4px 0;
-            background: rgba(0,0,0,0.2);
-            padding: 4px;
+            background: rgba(0,0,0,0.25);
+            padding: 5px;
             border-radius: 4px;
             width: 100%;
         }
@@ -322,31 +293,20 @@
             margin-top: 2px;
         }
 
-        /* Display Market & Hand Sections */
-        .section-panel {
-            background: var(--panel-bg);
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid #334155;
-        }
-
-        .section-title {
-            font-size: 0.95rem;
-            font-weight: bold;
-            color: var(--accent-blue);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
         .cards-row {
             display: flex;
             gap: 12px;
             overflow-x: auto;
             padding-bottom: 8px;
+        }
+
+        .selectable-card {
+            cursor: pointer;
+        }
+
+        .selectable-card:hover {
+            border-color: var(--accent-blue) !important;
+            transform: translateY(-3px);
         }
 
         /* Modals */
@@ -370,7 +330,7 @@
             border: 2px solid var(--accent-blue);
             border-radius: 16px;
             padding: 24px;
-            max-width: 500px;
+            max-width: 520px;
             width: 100%;
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
             text-align: center;
@@ -421,9 +381,9 @@
             transition: opacity 0.2s;
         }
 
-        button.btn-primary:hover { opacity: 0.9; }
+        button.btn-primary:hover:not(:disabled) { opacity: 0.9; }
+        button.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Scoring Table */
         .score-table {
             width: 100%;
             border-collapse: collapse;
@@ -439,11 +399,21 @@
 
         .score-table th { color: var(--accent-blue); }
 
-        .hidden { display: none !important; }
+        .food-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
 
         @media (max-width: 768px) {
-            .slots-grid {
-                grid-template-columns: repeat(5, minmax(110px, 1fr));
+            .flock-grid {
+                grid-template-columns: repeat(6, minmax(110px, 1fr));
             }
         }
     </style>
@@ -452,10 +422,10 @@
     <header>
         <a href="../" class="home-link">← Hub</a>
         <div class="title-container">
-            <h1>PC PARTS</h1>
+            <h1>WINGSPAN POCKET - PC PARTS</h1>
         </div>
         <div style="font-size: 0.8rem; color: var(--text-sub); font-weight: bold;">
-            SOLO RIG BUILDER
+            WINGSPAN POCKET SOLO
         </div>
     </header>
 
@@ -463,20 +433,20 @@
         <!-- Status Bar -->
         <div class="status-bar">
             <div class="status-box">
-                <div class="status-label">Round</div>
-                <div class="status-val" id="round-val">1 / 4</div>
+                <div class="status-label">Turn</div>
+                <div class="status-val" id="turn-val">1</div>
             </div>
             <div class="status-box">
-                <div class="status-label">Turns Left</div>
-                <div class="status-val" id="turns-val" style="color: var(--accent-blue);">8</div>
+                <div class="status-label">Flock (Max 6)</div>
+                <div class="status-val" id="flock-count-val" style="color: var(--accent-green);">0 / 6</div>
             </div>
             <div class="status-box">
-                <div class="status-label">Current Goal</div>
-                <div class="status-val" id="goal-val" style="font-size: 0.85rem; color: var(--accent-amber);">Processing Parts</div>
+                <div class="status-label">Nest Eggs</div>
+                <div class="status-val" id="nest-eggs-val" style="color: var(--accent-amber);">0</div>
             </div>
             <div class="status-box">
-                <div class="status-label">Automa Level</div>
-                <div class="status-val" id="automa-level-val" style="font-size: 0.9rem; color: var(--accent-purple);">Mid-Range Rig</div>
+                <div class="status-label">Objective</div>
+                <div class="status-val" id="objective-val" style="font-size: 0.8rem; color: var(--accent-purple);">Thermal Master</div>
             </div>
             <div class="status-box">
                 <div class="status-label">Automa Score</div>
@@ -484,116 +454,85 @@
             </div>
         </div>
 
-        <!-- Resource Inventory -->
-        <div class="resource-bar">
-            <div class="resource-pill" style="color: var(--silicon-color);">
-                <span>💎 Silicon:</span> <span id="res-silicon">2</span>
-            </div>
-            <div class="resource-pill" style="color: var(--power-color);">
-                <span>⚡ Power:</span> <span id="res-power">1</span>
-            </div>
-            <div class="resource-pill" style="color: var(--cooling-color);">
-                <span>❄️ Cooling:</span> <span id="res-cooling">1</span>
-            </div>
-            <div class="resource-pill" style="color: var(--paste-color);">
-                <span>🧪 Paste:</span> <span id="res-paste">1</span>
-            </div>
-            <div class="resource-pill" style="color: var(--accent-green);">
-                <span>🃏 Cards:</span> <span id="res-hand-count">5</span>
-            </div>
-            <button id="install-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer;">
-                🛠️ Install Part
+        <!-- Nest Actions Bar -->
+        <div class="nest-actions-bar">
+            <button class="nest-btn" id="action-play-btn" onclick="openPlayCardModal()">
+                <div class="nest-btn-title">🛠️ 1. Play Component</div>
+                <div class="nest-btn-desc">Play a card to Flock (pay food & eggs). Activates brown powers.</div>
+            </button>
+            <button class="nest-btn" id="action-draw-btn" onclick="openDrawCardsModal()">
+                <div class="nest-btn-title">🎴 2. Draw 2 Cards</div>
+                <div class="nest-btn-desc">Take 2 cards from Reserve, Food deck, or 1 of each. Activates brown powers.</div>
+            </button>
+            <button class="nest-btn" id="action-eggs-btn" onclick="openLayEggsModal()">
+                <div class="nest-btn-title">🪺 3. Lay Up to 3 Eggs</div>
+                <div class="nest-btn-desc">Lay up to 3 eggs on Flock cards or Nest. Activates brown powers.</div>
             </button>
         </div>
 
-        <!-- Log Message -->
+        <!-- Action Log Box -->
         <div id="log-box">
-            Welcome to PC Parts! Select an action or install a component card.
+            Welcome to Wingspan Pocket PC Parts! Select a Nest Action to begin your turn.
         </div>
 
-        <!-- Habitats -->
-        <div class="habitats-container">
-            <!-- Processing Habitat -->
-            <div class="habitat-row processing">
-                <div class="habitat-header">
-                    <div class="habitat-title" style="color: #f87171;">
-                        ⚡ Processing Habitat (CPUs & GPUs)
-                    </div>
-                    <button class="habitat-action-btn" id="proc-action-btn" onclick="executeHabitatAction('processing')">
-                        Procure Resources (+1 💎/⚡/❄️)
-                    </button>
-                </div>
-                <div class="slots-grid" id="processing-slots">
-                    <!-- Slots 0..4 injected dynamically -->
-                </div>
-            </div>
-
-            <!-- Memory & Storage Habitat -->
-            <div class="habitat-row memory">
-                <div class="habitat-header">
-                    <div class="habitat-title" style="color: #60a5fa;">
-                        💾 Memory & Storage Habitat (RAM & SSDs)
-                    </div>
-                    <button class="habitat-action-btn" id="mem-action-btn" onclick="executeHabitatAction('memory')">
-                        Overclock / Apply Paste (+1 🧪)
-                    </button>
-                </div>
-                <div class="slots-grid" id="memory-slots">
-                    <!-- Slots 0..4 injected dynamically -->
-                </div>
-            </div>
-
-            <!-- Chassis & Cooling Habitat -->
-            <div class="habitat-row chassis">
-                <div class="habitat-header">
-                    <div class="habitat-title" style="color: #34d399;">
-                        🖥️ Chassis & Cooling Habitat (Cases, PSUs, Coolers)
-                    </div>
-                    <button class="habitat-action-btn" id="chassis-action-btn" onclick="executeHabitatAction('chassis')">
-                        Download Drivers (Draw Card)
-                    </button>
-                </div>
-                <div class="slots-grid" id="chassis-slots">
-                    <!-- Slots 0..4 injected dynamically -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Component Market Display -->
+        <!-- Player Flock (Stormo) -->
         <div class="section-panel">
             <div class="section-title">
-                <span>🛒 Component Market Display (<span id="deck-count-val">40</span> remaining in supply)</span>
-                <button id="refresh-market-btn" style="background: transparent; color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
-                    Reset Market
-                </button>
+                <span>🪶 Your Flock (Stormo - Max 6 Components)</span>
             </div>
-            <div class="cards-row" id="market-display-row">
-                <!-- Market cards injected -->
+            <div class="flock-grid" id="player-flock-grid">
+                <!-- 6 slots injected dynamically -->
             </div>
         </div>
 
-        <!-- Hand Display -->
+        <!-- Player Hand & Food Reserve -->
         <div class="section-panel">
             <div class="section-title">
-                <span>🎒 Your Component Hand</span>
+                <span>🎒 Your Reserve Hand & Food Cards</span>
             </div>
-            <div class="cards-row" id="hand-cards-row">
-                <!-- Hand cards injected -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div>
+                    <div style="font-size: 0.8rem; color: var(--text-sub); margin-bottom: 6px; font-weight: bold;">
+                        FOOD CARDS / RESOURCES IN HAND (<span id="food-count-val">0</span>):
+                    </div>
+                    <div id="player-food-list" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <!-- Food pills injected -->
+                    </div>
+                </div>
+                <div style="margin-top: 6px;">
+                    <div style="font-size: 0.8rem; color: var(--text-sub); margin-bottom: 6px; font-weight: bold;">
+                        COMPONENT CARDS IN HAND (<span id="hand-count-val">0</span>):
+                    </div>
+                    <div class="cards-row" id="player-hand-row">
+                        <!-- Hand cards injected -->
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- End of Round Goals & Benchmark Card summary -->
+        <!-- Component Reserve Display (3 face up) & Decks -->
         <div class="section-panel">
             <div class="section-title">
-                <span>🏆 Benchmark Bonus & Round Objectives</span>
+                <span>🛒 Reserve Supply Display (<span id="deck-count-val">0</span> Deck | <span id="food-deck-count-val">0</span> Food Supply)</span>
             </div>
-            <div id="benchmark-summary" style="font-size: 0.88rem; color: var(--text-sub); line-height: 1.5;">
-                <!-- Summary injected -->
+            <div class="cards-row" id="reserve-cards-row">
+                <!-- 3 face up cards injected -->
             </div>
         </div>
 
+        <!-- Automa Opponent Panel -->
+        <div class="section-panel" style="border-color: rgba(244, 63, 94, 0.4);">
+            <div class="section-title" style="color: var(--accent-rose);">
+                <span>🤖 Automa Solo Opponent Status</span>
+            </div>
+            <div id="automa-status-content" style="font-size: 0.85rem; color: var(--text-sub); line-height: 1.5;">
+                <!-- Automa details injected -->
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
         <div id="leaderboard-container" class="section-panel" style="text-align: center;">
-            <div class="section-title" style="justify-content: center;">Top Benchmark Scores</div>
+            <div class="section-title" style="justify-content: center;">Top Wingspan Pocket Scores</div>
             <table class="score-table">
                 <thead>
                     <tr>
@@ -605,163 +544,163 @@
                     </tr>
                 </thead>
                 <tbody id="leaderboard-body">
-                    <tr><td colspan="5">No scores saved yet. Complete a rig benchmark!</td></tr>
+                    <tr><td colspan="5">No scores saved yet. Complete a game!</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Game Setup Modal -->
+    <!-- Setup Modal -->
     <div id="setup-modal" class="modal">
         <div class="modal-content">
-            <h2>PC PARTS SETUP</h2>
-            <p style="font-size: 0.85rem; color: var(--text-sub);">Configure your solo benchmark session against the Automa AI.</p>
+            <h2>WINGSPAN POCKET SETUP</h2>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Configure your solo game against the Automa opponent.</p>
 
             <div class="option-group">
-                <label for="automa-select">Automa AI Difficulty:</label>
-                <select id="automa-select">
-                    <option value="easy">Entry-Level Rig (Easy - Automa VP Multiplier 0.8x)</option>
-                    <option value="normal" selected>Mid-Range Rig (Normal - Automa VP Multiplier 1.0x)</option>
-                    <option value="hard">High-End Workstation (Hard - Automa VP Multiplier 1.25x)</option>
-                    <option value="expert">Overclocked Supercomputer (Expert - Automa VP Multiplier 1.5x)</option>
+                <label for="automa-difficulty-select">Automa Difficulty:</label>
+                <select id="automa-difficulty-select">
+                    <option value="easy">Beginner Automa (Easy)</option>
+                    <option value="normal" selected>Standard Automa (Normal)</option>
+                    <option value="hard">Expert Automa (Hard)</option>
                 </select>
             </div>
 
             <div class="option-group">
-                <label for="benchmark-card-select">Secret Benchmark Objective:</label>
-                <select id="benchmark-card-select">
-                    <option value="processing_guru">Processing Power: +2 VP per Processing Part installed</option>
-                    <option value="storage_beast">Storage Architect: +3 VP per Part with Tucked Data Cards</option>
-                    <option value="thermal_king">Liquid Cooled: +2 VP per Thermal Paste placed</option>
-                    <option value="efficiency_master">Eco Build: +3 VP for each Part costing 1 or fewer resources</option>
+                <label for="objective-select">Objective Card (Carte Obiettivo):</label>
+                <select id="objective-select">
+                    <option value="thermal">Thermal Master: +1 VP per egg on Cooling/Paste parts</option>
+                    <option value="processing">Processing Power: +1 VP per egg on Silicon/Power parts</option>
+                    <option value="capacity">High Capacity: +1 VP per egg on components with 3+ egg limit</option>
                 </select>
             </div>
 
-            <button class="btn-primary" id="start-game-btn">Start Session</button>
+            <button class="btn-primary" id="start-game-btn">Start Game</button>
         </div>
     </div>
 
-    <!-- Card Install Modal -->
-    <div id="install-modal" class="modal">
+    <!-- Play Card Modal -->
+    <div id="play-card-modal" class="modal">
         <div class="modal-content">
-            <h2>INSTALL COMPONENT</h2>
-            <p style="font-size: 0.85rem; color: var(--text-sub);">Select a component card from your hand and target habitat slot.</p>
-            <div id="install-options-container" style="display: flex; flex-direction: column; gap: 10px; margin: 15px 0;">
-                <!-- Installed choices -->
+            <h2>PLAY COMPONENT CARD</h2>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Select a card from hand to play to your Flock.</p>
+            <div id="play-card-list" style="display: flex; flex-direction: column; gap: 10px; margin: 15px 0;">
+                <!-- Play card options injected -->
             </div>
-            <button class="btn-action" style="background: #475569;" onclick="closeModal('install-modal')">Cancel</button>
+            <button class="btn-action" style="background: #475569;" onclick="closeModal('play-card-modal')">Cancel</button>
         </div>
     </div>
 
-    <!-- Resource Selection Modal -->
-    <div id="resource-modal" class="modal">
+    <!-- Draw Cards Modal -->
+    <div id="draw-cards-modal" class="modal">
         <div class="modal-content">
-            <h2>SELECT RESOURCE</h2>
-            <p style="font-size: 0.85rem; color: var(--text-sub);">Choose a resource to gain from Procurement action:</p>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0;">
-                <button class="btn-primary" style="background: var(--silicon-color); color: #000;" onclick="confirmGainResource('silicon')">💎 Silicon</button>
-                <button class="btn-primary" style="background: var(--power-color); color: #000;" onclick="confirmGainResource('power')">⚡ Power</button>
-                <button class="btn-primary" style="background: var(--cooling-color); color: #fff;" onclick="confirmGainResource('cooling')">❄️ Cooling</button>
+            <h2>DRAW 2 CARDS</h2>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Select 2 items: face-up Reserve cards or top of Food deck.</p>
+            <div id="draw-cards-options" style="display: flex; flex-direction: column; gap: 10px; margin: 15px 0;">
+                <!-- Selection choices -->
             </div>
+            <button class="btn-primary" id="confirm-draw-btn" onclick="confirmDrawSelection()" disabled>Confirm Draw (0/2 Selected)</button>
+            <button class="btn-action" style="background: #475569; margin-top: 8px;" onclick="closeModal('draw-cards-modal')">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Lay Eggs Modal -->
+    <div id="lay-eggs-modal" class="modal">
+        <div class="modal-content">
+            <h2>LAY UP TO 3 EGGS</h2>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Distribute up to 3 eggs across valid Flock cards or Nest.</p>
+            <div id="lay-eggs-options" style="display: flex; flex-direction: column; gap: 10px; margin: 15px 0;">
+                <!-- Egg distribution sliders/buttons -->
+            </div>
+            <button class="btn-primary" id="confirm-eggs-btn" onclick="confirmLayEggs()">Confirm Eggs</button>
+            <button class="btn-action" style="background: #475569; margin-top: 8px;" onclick="closeModal('lay-eggs-modal')">Cancel</button>
         </div>
     </div>
 
     <!-- Game Over Modal -->
     <div id="game-over-modal" class="modal">
         <div class="modal-content">
-            <h2 id="go-title">BENCHMARK COMPLETE</h2>
+            <h2 id="go-title">GAME COMPLETED</h2>
             <p id="go-msg" style="font-size: 0.95rem; line-height: 1.4; color: var(--text-sub);"></p>
 
-            <div style="background: rgba(15,23,42,0.8); border-radius: 10px; padding: 12px; margin: 15px 0;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-weight: bold;">
-                    <span>Your Total Score:</span> <span id="final-player-score" style="color: var(--accent-green); font-size: 1.2rem;">0</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                    <span>Automa Score:</span> <span id="final-automa-score" style="color: var(--accent-rose); font-size: 1.2rem;">0</span>
-                </div>
+            <div style="background: rgba(15,23,42,0.8); border-radius: 10px; padding: 12px; margin: 15px 0; text-align: left;">
+                <div style="font-weight: bold; color: var(--accent-blue); margin-bottom: 8px;">Scoring Breakdown:</div>
+                <div id="scoring-breakdown-details" style="font-size: 0.85rem; line-height: 1.6; color: #e2e8f0;"></div>
             </div>
 
-            <button class="btn-primary" id="play-again-btn">New Benchmark Session</button>
+            <button class="btn-primary" id="play-again-btn">New Game</button>
         </div>
     </div>
 
     <script>
-        // COMPONENT CARD DATASET (40 unique PC Parts)
-        const COMPONENT_DECK = [
-            // Processing Habitat Parts
-            { id: 'cpu_ryzen9', name: 'Ryzen 9 7950X', habitat: 'processing', cost: { silicon: 2, power: 1 }, vp: 8, powerType: 'installed', effect: 'When Installed: Gain +1 Silicon 💎 and +1 Power ⚡.' },
-            { id: 'cpu_i9_14900k', name: 'Core i9-14900K', habitat: 'processing', cost: { silicon: 2, power: 2 }, vp: 9, powerType: 'activated', effect: 'When Activated: Gain +1 Power ⚡.' },
-            { id: 'gpu_rtx_4090', name: 'GeForce RTX 4090', habitat: 'processing', cost: { silicon: 3, power: 2 }, vp: 12, powerType: 'installed', effect: 'When Installed: Draw 2 Component Cards.' },
-            { id: 'gpu_rx_7900xtx', name: 'Radeon RX 7900 XTX', habitat: 'processing', cost: { silicon: 2, cooling: 1 }, vp: 7, powerType: 'activated', effect: 'When Activated: Tuck 1 card under this part to gain 1 🧪 Paste.' },
-            { id: 'cpu_ryzen7_7800x3d', name: 'Ryzen 7 7800X3D', habitat: 'processing', cost: { silicon: 2 }, vp: 6, powerType: 'activated', effect: 'When Activated: Gain +1 Silicon 💎.' },
-            { id: 'gpu_rtx_4070ti', name: 'GeForce RTX 4070 Ti', habitat: 'processing', cost: { silicon: 2, power: 1 }, vp: 7, powerType: 'installed', effect: 'When Installed: Gain +1 Thermal Paste 🧪.' },
-            { id: 'cpu_i7_13700k', name: 'Core i7-13700K', habitat: 'processing', cost: { silicon: 1, power: 1 }, vp: 5, powerType: 'activated', effect: 'When Activated: Gain +1 Cooling ❄️.' },
-            { id: 'gpu_rx_7800xt', name: 'Radeon RX 7800 XT', habitat: 'processing', cost: { silicon: 1, power: 1 }, vp: 5, powerType: 'installed', effect: 'When Installed: Gain +1 Silicon 💎.' },
-            { id: 'npu_ai_accelerator', name: 'Tensor NPU Accelerator', habitat: 'processing', cost: { silicon: 2, cooling: 1 }, vp: 8, powerType: 'activated', effect: 'When Activated: Draw 1 card from Market.' },
-            { id: 'cpu_threadripper', name: 'Threadripper PRO 7995WX', habitat: 'processing', cost: { silicon: 3, power: 2, cooling: 1 }, vp: 14, powerType: 'installed', effect: 'When Installed: Gain +2 Thermal Paste 🧪.' },
-            { id: 'gpu_rtx_4060', name: 'GeForce RTX 4060', habitat: 'processing', cost: { silicon: 1 }, vp: 4, powerType: 'activated', effect: 'When Activated: Gain +1 Power ⚡.' },
-            { id: 'cpu_ryzen5_7600x', name: 'Ryzen 5 7600X', habitat: 'processing', cost: { silicon: 1 }, vp: 4, powerType: 'installed', effect: 'When Installed: Draw 1 Component Card.' },
-            { id: 'gpu_arc_a770', name: 'Intel Arc A770', habitat: 'processing', cost: { silicon: 1, cooling: 1 }, vp: 5, powerType: 'activated', effect: 'When Activated: Tuck 1 card under this part.' },
+        // FOOD TYPES DATA
+        const FOOD_TYPES = {
+            silicon: { name: 'Silicon', icon: '💎', color: 'var(--silicon-color)' },
+            power: { name: 'Power', icon: '⚡', color: 'var(--power-color)' },
+            cooling: { name: 'Cooling', icon: '❄️', color: 'var(--cooling-color)' },
+            paste: { name: 'Paste', icon: '🧪', color: 'var(--paste-color)' },
+            cable: { name: 'Cable', icon: '🔌', color: 'var(--cable-color)' }
+        };
 
-            // Memory & Storage Habitat Parts
-            { id: 'ram_ddr5_64gb', name: 'Trident Z5 DDR5 64GB', habitat: 'memory', cost: { silicon: 2 }, vp: 6, powerType: 'activated', effect: 'When Activated: Apply +1 Thermal Paste 🧪.' },
-            { id: 'ssd_gen5_nvme_4tb', name: 'Crucial T700 Gen5 4TB SSD', habitat: 'memory', cost: { silicon: 2, cooling: 1 }, vp: 8, powerType: 'activated', effect: 'When Activated: Tuck up to 2 cards under this SSD.' },
-            { id: 'ram_ddr5_32gb', name: 'Vengeance DDR5 32GB', habitat: 'memory', cost: { silicon: 1 }, vp: 4, powerType: 'installed', effect: 'When Installed: Gain +1 Thermal Paste 🧪.' },
-            { id: 'ssd_gen4_2tb', name: 'Samsung 990 PRO 2TB', habitat: 'memory', cost: { silicon: 1, cooling: 1 }, vp: 5, powerType: 'activated', effect: 'When Activated: Tuck 1 card under this SSD.' },
-            { id: 'raid_controller', name: 'Hardware RAID Array', habitat: 'memory', cost: { silicon: 2, power: 1 }, vp: 7, powerType: 'installed', effect: 'When Installed: Tuck 2 cards from deck under this part.' },
-            { id: 'ssd_sata_4tb', name: 'MX500 SATA SSD 4TB', habitat: 'memory', cost: { silicon: 1 }, vp: 3, powerType: 'activated', effect: 'When Activated: Gain +1 Silicon 💎.' },
-            { id: 'ram_ecc_server_128gb', name: 'Server ECC Registered RAM', habitat: 'memory', cost: { silicon: 2, power: 1 }, vp: 7, powerType: 'activated', effect: 'When Activated: Apply +1 Thermal Paste 🧪.' },
-            { id: 'optane_cache', name: 'Optane High-Speed Cache', habitat: 'memory', cost: { silicon: 1 }, vp: 4, powerType: 'installed', effect: 'When Installed: Draw 1 card and gain +1 Paste 🧪.' },
-            { id: 'ssd_nvme_1tb', name: 'SN850X NVMe 1TB', habitat: 'memory', cost: { silicon: 1 }, vp: 4, powerType: 'activated', effect: 'When Activated: Tuck 1 card under this SSD.' },
-            { id: 'nas_storage_16tb', name: 'IronWolf Pro 16TB HDD', habitat: 'memory', cost: { power: 1 }, vp: 3, powerType: 'activated', effect: 'When Activated: Tuck 1 card from hand.' },
-            { id: 'ram_rgb_16gb', name: 'Dominator RGB DDR5 16GB', habitat: 'memory', cost: { silicon: 1 }, vp: 3, powerType: 'installed', effect: 'When Installed: Gain +1 Power ⚡.' },
-            { id: 'usb_c_hub', name: 'High-Speed USB 4 Expansion', habitat: 'memory', cost: { power: 1 }, vp: 2, powerType: 'activated', effect: 'When Activated: Draw 1 card.' },
+        const FOOD_KEYS = Object.keys(FOOD_TYPES);
 
-            // Chassis & Cooling Habitat Parts
-            { id: 'aio_360mm_cooler', name: 'Kraken Elite 360 RGB AIO', habitat: 'chassis', cost: { cooling: 2, power: 1 }, vp: 7, powerType: 'activated', effect: 'When Activated: Draw 1 Component Card.' },
-            { id: 'psu_1200w_platinum', name: 'AX1200i Platinum PSU', habitat: 'chassis', cost: { power: 2 }, vp: 6, powerType: 'installed', effect: 'When Installed: Gain +2 Power ⚡.' },
-            { id: 'case_full_tower', name: 'O11 Dynamic EVO XL Case', habitat: 'chassis', cost: { cooling: 1, power: 1 }, vp: 5, powerType: 'activated', effect: 'When Activated: Gain +1 Cooling ❄️.' },
-            { id: 'cooler_custom_loop', name: 'Custom Liquid Cooling Loop', habitat: 'chassis', cost: { cooling: 3 }, vp: 9, powerType: 'installed', effect: 'When Installed: Apply +2 Thermal Paste 🧪.' },
-            { id: 'psu_850w_gold', name: 'RM850x 80+ Gold PSU', habitat: 'chassis', cost: { power: 1 }, vp: 4, powerType: 'installed', effect: 'When Installed: Gain +1 Power ⚡.' },
-            { id: 'case_mid_tower', name: '4000D Airflow Case', habitat: 'chassis', cost: { cooling: 1 }, vp: 3, powerType: 'activated', effect: 'When Activated: Draw 1 Component Card.' },
-            { id: 'cooler_noctua_nhd15', name: 'Noctua NH-D15 Air Cooler', habitat: 'chassis', cost: { cooling: 2 }, vp: 6, powerType: 'installed', effect: 'When Installed: Gain +1 Cooling ❄️ and +1 Paste 🧪.' },
-            { id: 'fans_rgb_pack', name: 'LL120 RGB Fan 3-Pack', habitat: 'chassis', cost: { cooling: 1, power: 1 }, vp: 4, powerType: 'activated', effect: 'When Activated: Gain +1 Cooling ❄️.' },
-            { id: 'psu_1500w_titanium', name: 'Dark Power Pro 13 1500W', habitat: 'chassis', cost: { power: 3 }, vp: 10, powerType: 'installed', effect: 'When Installed: Gain +2 Power ⚡.' },
-            { id: 'case_itx_sff', name: 'FormD T1 ITX SFF Case', habitat: 'chassis', cost: { cooling: 1 }, vp: 4, powerType: 'activated', effect: 'When Activated: Draw 1 card.' },
-            { id: 'cooler_240mm_aio', name: 'DeepCool LT520 240mm', habitat: 'chassis', cost: { cooling: 1 }, vp: 4, powerType: 'installed', effect: 'When Installed: Gain +1 Cooling ❄️.' },
-            { id: 'fan_controller', name: 'Commander PRO Fan Hub', habitat: 'chassis', cost: { power: 1 }, vp: 2, powerType: 'activated', effect: 'When Activated: Gain +1 Cooling ❄️.' },
-            { id: 'sleeved_cables', name: 'Custom Braided Cable Set', habitat: 'chassis', cost: { power: 1 }, vp: 3, powerType: 'installed', effect: 'When Installed: Gain +1 Thermal Paste 🧪.' }
+        // COMPONENT CARD DATASET (Double-Sided: Component Side / Food Side)
+        const WINGSPAN_POCKET_DECK = [
+            { id: 'c1', name: 'Ryzen 9 7950X', foodSide: 'silicon', foodCost: ['silicon', 'power'], vp: 8, eggLimit: 3, powerDesc: 'Brown: Lay 1 Egg on this card.', powerType: 'egg_self' },
+            { id: 'c2', name: 'Core i9-14900K', foodSide: 'power', foodCost: ['power', 'power'], vp: 7, eggLimit: 2, powerDesc: 'Brown: Gain 1 Silicon food card.', powerType: 'gain_silicon' },
+            { id: 'c3', name: 'GeForce RTX 4090', foodSide: 'silicon', foodCost: ['silicon', 'silicon', 'power'], vp: 9, eggLimit: 2, powerDesc: 'Brown: Tuck 1 card from hand under this card.', powerType: 'tuck_hand' },
+            { id: 'c4', name: 'Radeon RX 7900 XTX', foodSide: 'cooling', foodCost: ['silicon', 'cooling'], vp: 6, eggLimit: 4, powerDesc: 'Brown: Gain 1 Cooling food card.', powerType: 'gain_cooling' },
+            { id: 'c5', name: 'Trident Z5 DDR5 64GB', foodSide: 'paste', foodCost: ['silicon', 'paste'], vp: 5, eggLimit: 3, powerDesc: 'Brown: Lay 1 Egg on any card.', powerType: 'egg_any' },
+            { id: 'c6', name: 'Crucial Gen5 4TB SSD', foodSide: 'cable', foodCost: ['silicon', 'cable'], vp: 6, eggLimit: 3, powerDesc: 'Brown: Tuck 1 card from reserve display.', powerType: 'tuck_reserve' },
+            { id: 'c7', name: 'Kraken 360 RGB AIO', foodSide: 'cooling', foodCost: ['cooling', 'cooling'], vp: 5, eggLimit: 4, powerDesc: 'Brown: Gain 1 Paste food card.', powerType: 'gain_paste' },
+            { id: 'c8', name: 'AX1200i Platinum PSU', foodSide: 'power', foodCost: ['power', 'cable'], vp: 6, eggLimit: 2, powerDesc: 'Brown: Gain 1 Power food card.', powerType: 'gain_power' },
+            { id: 'c9', name: 'Noctua NH-D15 Cooler', foodSide: 'cooling', foodCost: ['cooling'], vp: 4, eggLimit: 5, powerDesc: 'Brown: Lay 1 Egg on this card.', powerType: 'egg_self' },
+            { id: 'c10', name: 'O11 Dynamic EVO XL', foodSide: 'cable', foodCost: ['cable', 'power'], vp: 5, eggLimit: 3, powerDesc: 'Brown: Draw 1 card from deck.', powerType: 'draw_card' },
+            { id: 'c11', name: 'Ryzen 7 7800X3D', foodSide: 'silicon', foodCost: ['silicon'], vp: 5, eggLimit: 3, powerDesc: 'Brown: Lay 1 Egg on this card.', powerType: 'egg_self' },
+            { id: 'c12', name: 'GeForce RTX 4070 Ti', foodSide: 'paste', foodCost: ['silicon', 'paste'], vp: 6, eggLimit: 2, powerDesc: 'Brown: Tuck 1 card from hand.', powerType: 'tuck_hand' },
+            { id: 'c13', name: 'Vengeance DDR5 32GB', foodSide: 'silicon', foodCost: ['silicon'], vp: 3, eggLimit: 4, powerDesc: 'Brown: Lay 1 Egg on any card.', powerType: 'egg_any' },
+            { id: 'c14', name: 'Samsung 990 PRO 2TB', foodSide: 'cable', foodCost: ['cable'], vp: 4, eggLimit: 3, powerDesc: 'Brown: Gain 1 Cable food card.', powerType: 'gain_cable' },
+            { id: 'c15', name: 'RM850x 80+ Gold PSU', foodSide: 'power', foodCost: ['power'], vp: 3, eggLimit: 3, powerDesc: 'Brown: Gain 1 Power food card.', powerType: 'gain_power' },
+            { id: 'c16', name: '4000D Airflow Case', foodSide: 'cable', foodCost: ['cable'], vp: 3, eggLimit: 4, powerDesc: 'Brown: Draw 1 card from deck.', powerType: 'draw_card' },
+            { id: 'c17', name: 'Threadripper 7995WX', foodSide: 'silicon', foodCost: ['silicon', 'silicon', 'power', 'cooling'], vp: 10, eggLimit: 2, powerDesc: 'Brown: Lay 2 Eggs on this card.', powerType: 'egg_self_2' },
+            { id: 'c18', name: 'Tensor NPU Accelerator', foodSide: 'paste', foodCost: ['silicon', 'paste'], vp: 7, eggLimit: 2, powerDesc: 'Brown: Tuck 1 card from hand.', powerType: 'tuck_hand' },
+            { id: 'c19', name: 'Custom Liquid Loop', foodSide: 'cooling', foodCost: ['cooling', 'paste'], vp: 8, eggLimit: 3, powerDesc: 'Brown: Lay 1 Egg on this card.', powerType: 'egg_self' },
+            { id: 'c20', name: 'Dominator RGB DDR5', foodSide: 'power', foodCost: ['power', 'silicon'], vp: 4, eggLimit: 3, powerDesc: 'Brown: Gain 1 Silicon food card.', powerType: 'gain_silicon' },
+            { id: 'c21', name: 'SN850X NVMe 1TB', foodSide: 'cable', foodCost: ['cable'], vp: 3, eggLimit: 3, powerDesc: 'Brown: Tuck 1 card from reserve display.', powerType: 'tuck_reserve' },
+            { id: 'c22', name: 'Dark Power Pro 1500W', foodSide: 'power', foodCost: ['power', 'power'], vp: 7, eggLimit: 2, powerDesc: 'Brown: Gain 1 Cable food card.', powerType: 'gain_cable' },
+            { id: 'c23', name: 'LL120 RGB Fans 3-Pack', foodSide: 'cooling', foodCost: ['cooling'], vp: 3, eggLimit: 4, powerDesc: 'Brown: Lay 1 Egg on any card.', powerType: 'egg_any' },
+            { id: 'c24', name: 'FormD T1 ITX Case', foodSide: 'cable', foodCost: ['cable', 'cooling'], vp: 5, eggLimit: 2, powerDesc: 'Brown: Draw 1 card from deck.', powerType: 'draw_card' }
         ];
 
-        // ROUND GOALS
-        const ROUND_GOALS = [
-            { id: 'processing_count', title: 'Processing Parts Installed', check: (state) => state.playerBoard.processing.filter(c => c).length },
-            { id: 'thermal_paste', title: 'Thermal Paste Placed', check: (state) => countTotalPaste(state.playerBoard) },
-            { id: 'tucked_cards', title: 'Tucked Data Cards', check: (state) => countTotalTucked(state.playerBoard) },
-            { id: 'total_installed', title: 'Total Components Installed', check: (state) => countTotalParts(state.playerBoard) }
-        ];
+        // OBJECTIVES
+        const OBJECTIVES = {
+            thermal: { id: 'thermal', name: 'Thermal Master', desc: '+1 VP per egg on Cooling/Paste parts', checkCard: c => c.foodCost.includes('cooling') || c.foodCost.includes('paste') },
+            processing: { id: 'processing', name: 'Processing Power', desc: '+1 VP per egg on Silicon/Power parts', checkCard: c => c.foodCost.includes('silicon') || c.foodCost.includes('power') },
+            capacity: { id: 'capacity', name: 'High Capacity', desc: '+1 VP per egg on components with 3+ egg limit', checkCard: c => c.eggLimit >= 3 }
+        };
 
         // GAME STATE
         let gameState = {
-            round: 1,
-            turnsInRound: 8,
-            currentTurn: 1,
-            automaLevel: 'normal',
-            automaScore: 0,
-            automaCollection: [],
-            benchmarkObjective: 'processing_guru',
-            resources: { silicon: 2, power: 1, cooling: 1, paste: 1 },
-            playerBoard: {
-                processing: [null, null, null, null, null],
-                memory: [null, null, null, null, null],
-                chassis: [null, null, null, null, null]
-            },
+            turn: 1,
+            playerFlock: [], // array of { card, eggs: number, tuckedCards: [] }
+            playerNestEggs: 0,
+            playerHand: [], // array of card objects (component side)
+            playerFood: [], // array of food type strings, e.g. ['silicon', 'power']
+            automaFlock: [], // array of card objects
+            automaNestEggs: 0,
+            automaEggsOnCards: 0,
+            automaTuckedCount: 0,
+            automaFoodCards: [],
+            reserve: [], // 3 face-up cards
             deck: [],
-            market: [],
-            hand: [],
+            foodDeck: [],
+            automaDifficulty: 'normal',
+            objective: 'thermal',
             gameOver: false,
-            message: "Welcome! Choose an action to begin your build."
+            message: 'Game initialized.'
         };
+
+        let tempDrawSelection = [];
+        let tempEggDistribution = [];
 
         function shuffle(arr) {
             const array = [...arr];
@@ -773,35 +712,35 @@
         }
 
         function cloneCard(card) {
-            if (!card) return null;
-            return { ...card, pasteCount: card.pasteCount || 0, tuckedCount: card.tuckedCount || 0 };
+            return JSON.parse(JSON.stringify(card));
         }
 
-        function initGame(automaLevel = 'normal', benchmarkObj = 'processing_guru') {
-            const shuffledDeck = shuffle(COMPONENT_DECK).map(cloneCard);
+        function initGame(difficulty = 'normal', objectiveKey = 'thermal') {
+            const shuffledDeck = shuffle(WINGSPAN_POCKET_DECK).map(cloneCard);
+            const shuffledFoodDeck = shuffle(WINGSPAN_POCKET_DECK).map(cloneCard);
 
-            const hand = [shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop()];
-            const market = [shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop()];
+            const hand = [shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop()];
+            const foodHand = [shuffledFoodDeck.pop().foodSide, shuffledFoodDeck.pop().foodSide, shuffledFoodDeck.pop().foodSide];
+            const reserve = [shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop()];
 
             gameState = {
-                round: 1,
-                turnsInRound: 8,
-                currentTurn: 1,
-                automaLevel: automaLevel,
-                automaScore: 0,
-                automaCollection: [],
-                benchmarkObjective: benchmarkObj,
-                resources: { silicon: 2, power: 1, cooling: 1, paste: 1 },
-                playerBoard: {
-                    processing: [null, null, null, null, null],
-                    memory: [null, null, null, null, null],
-                    chassis: [null, null, null, null, null]
-                },
+                turn: 1,
+                playerFlock: [],
+                playerNestEggs: 0,
+                playerHand: hand,
+                playerFood: foodHand,
+                automaFlock: [],
+                automaNestEggs: 0,
+                automaEggsOnCards: 0,
+                automaTuckedCount: 0,
+                automaFoodCards: [],
+                reserve: reserve,
                 deck: shuffledDeck,
-                market: market,
-                hand: hand,
+                foodDeck: shuffledFoodDeck,
+                automaDifficulty: difficulty,
+                objective: objectiveKey,
                 gameOver: false,
-                message: "Session started. Select a habitat action or install a component card."
+                message: 'Game started! Select a Nest Action.'
             };
 
             updateUI();
@@ -809,431 +748,549 @@
             renderLeaderboard();
         }
 
-        function countTotalParts(board) {
-            let total = 0;
-            ['processing', 'memory', 'chassis'].forEach(h => {
-                total += board[h].filter(c => c !== null).length;
-            });
-            return total;
+        function countPlayerEggsOnCards() {
+            return gameState.playerFlock.reduce((acc, slot) => acc + slot.eggs, 0);
         }
 
-        function countTotalPaste(board) {
-            let paste = 0;
-            ['processing', 'memory', 'chassis'].forEach(h => {
-                board[h].forEach(c => {
-                    if (c) paste += (c.pasteCount || 0);
-                });
-            });
-            return paste;
+        function totalPlayerEggsAvailable() {
+            return gameState.playerNestEggs + countPlayerEggsOnCards();
         }
 
-        function countTotalTucked(board) {
-            let tucked = 0;
-            ['processing', 'memory', 'chassis'].forEach(h => {
-                board[h].forEach(c => {
-                    if (c) tucked += (c.tuckedCount || 0);
-                });
-            });
-            return tucked;
-        }
+        function canAffordFoodCost(foodCostArray) {
+            let pool = [...gameState.playerFood];
+            let required = [...foodCostArray];
 
-        function executeHabitatAction(habitat) {
-            if (gameState.gameOver || gameState.currentTurn > gameState.turnsInRound) return;
-
-            const installedParts = gameState.playerBoard[habitat].filter(c => c !== null);
-
-            if (habitat === 'processing') {
-                // Action: Procurement (Gain Resource)
-                document.getElementById('resource-modal').style.display = 'flex';
-            } else if (habitat === 'memory') {
-                // Action: Overclock / Thermal Paste
-                if (installedParts.length === 0) {
-                    setMessage("Need at least 1 installed Memory/Storage part to apply Thermal Paste!");
-                    return;
+            for (let i = required.length - 1; i >= 0; i--) {
+                const req = required[i];
+                const poolIdx = pool.indexOf(req);
+                if (poolIdx !== -1) {
+                    pool.splice(poolIdx, 1);
+                    required.splice(i, 1);
                 }
-                // Apply 1 Paste to first available part
-                installedParts[0].pasteCount = (installedParts[0].pasteCount || 0) + 1;
-                setMessage(`Applied Thermal Paste 🧪 to ${installedParts[0].name}.`);
-                triggerHabitatActivationPowers('memory');
-                endPlayerTurn();
-            } else if (habitat === 'chassis') {
-                // Action: Download Drivers (Draw Card)
-                if (gameState.market.length > 0) {
-                    const card = gameState.market.shift();
-                    gameState.hand.push(card);
-                    if (gameState.deck.length > 0) gameState.market.push(gameState.deck.pop());
-                    setMessage(`Downloaded Driver: Added ${card.name} to hand.`);
-                } else if (gameState.deck.length > 0) {
-                    const card = gameState.deck.pop();
-                    gameState.hand.push(card);
-                    setMessage(`Downloaded Driver: Drew ${card.name} from deck.`);
-                } else {
-                    setMessage("No cards left in market or deck!");
-                    return;
+            }
+
+            return pool.length >= required.length * 2;
+        }
+
+        function autoDeductFoodCost(foodCostArray) {
+            let required = [...foodCostArray];
+
+            for (let i = required.length - 1; i >= 0; i--) {
+                const req = required[i];
+                const poolIdx = gameState.playerFood.indexOf(req);
+                if (poolIdx !== -1) {
+                    gameState.playerFood.splice(poolIdx, 1);
+                    required.splice(i, 1);
                 }
-                triggerHabitatActivationPowers('chassis');
-                endPlayerTurn();
+            }
+
+            while (required.length > 0) {
+                required.pop();
+                gameState.playerFood.pop();
+                gameState.playerFood.pop();
             }
         }
 
-        function confirmGainResource(type) {
-            closeModal('resource-modal');
-            gameState.resources[type] = (gameState.resources[type] || 0) + 1;
-            setMessage(`Procured 1 ${type.toUpperCase()} resource.`);
-            triggerHabitatActivationPowers('processing');
-            endPlayerTurn();
+        function deductEggsForFlockCost() {
+            const currentFlockSize = gameState.playerFlock.length;
+            let eggCost = 0;
+            if (currentFlockSize === 2 || currentFlockSize === 3) eggCost = 1;
+            if (currentFlockSize === 4 || currentFlockSize === 5) eggCost = 2;
+
+            if (eggCost === 0) return true;
+
+            let remainingCost = eggCost;
+            if (gameState.playerNestEggs >= remainingCost) {
+                gameState.playerNestEggs -= remainingCost;
+                return true;
+            } else {
+                remainingCost -= gameState.playerNestEggs;
+                gameState.playerNestEggs = 0;
+            }
+
+            for (let i = 0; i < gameState.playerFlock.length; i++) {
+                const slot = gameState.playerFlock[i];
+                if (slot.eggs >= remainingCost) {
+                    slot.eggs -= remainingCost;
+                    remainingCost = 0;
+                    break;
+                } else {
+                    remainingCost -= slot.eggs;
+                    slot.eggs = 0;
+                }
+            }
+
+            return remainingCost === 0;
         }
 
-        function triggerHabitatActivationPowers(habitat) {
-            // Trigger powers on activated cards in habitat
-            gameState.playerBoard[habitat].forEach(card => {
-                if (card && card.powerType === 'activated') {
-                    if (card.id === 'cpu_i9_14900k' || card.id === 'gpu_rtx_4060') {
-                        gameState.resources.power += 1;
-                    } else if (card.id === 'cpu_ryzen7_7800x3d' || card.id === 'ssd_sata_4tb') {
-                        gameState.resources.silicon += 1;
-                    } else if (card.id === 'cpu_i7_13700k' || card.id === 'case_full_tower' || card.id === 'fans_rgb_pack' || card.id === 'fan_controller') {
-                        gameState.resources.cooling += 1;
-                    } else if (card.id === 'ram_ddr5_64gb' || card.id === 'ram_ecc_server_128gb') {
-                        card.pasteCount = (card.pasteCount || 0) + 1;
-                    } else if (card.id === 'ssd_gen5_nvme_4tb' || card.id === 'ssd_gen4_2tb' || card.id === 'ssd_nvme_1tb') {
-                        if (gameState.hand.length > 0) {
-                            gameState.hand.pop(); // Tuck card from hand
-                            card.tuckedCount = (card.tuckedCount || 0) + 1;
+        // AUTOMA SOLO AI OPPONENT
+        function executeAutomaTurn() {
+            const diff = gameState.automaDifficulty;
+            let logMsg = "Automa Turn: ";
+
+            if (gameState.foodDeck.length > 0) {
+                const drawnFood = gameState.foodDeck.pop();
+                gameState.automaFoodCards.push(drawnFood.foodSide);
+                logMsg += `Phase 1: Gained ${drawnFood.foodSide} food card. `;
+            } else {
+                gameState.automaTuckedCount += 1;
+                logMsg += `Phase 1: Tucked 1 card. `;
+            }
+
+            let playedCard = false;
+            if (gameState.automaFlock.length < 6 && gameState.reserve.length > 0) {
+                const candidateCardIdx = gameState.reserve.findIndex(c => c !== null);
+                if (candidateCardIdx !== -1) {
+                    const candidate = gameState.reserve[candidateCardIdx];
+                    const reqEggs = (gameState.automaFlock.length >= 2) ? 1 : 0;
+                    const availableEggs = gameState.automaNestEggs + gameState.automaEggsOnCards;
+
+                    if (diff === 'easy' || availableEggs >= reqEggs) {
+                        if (reqEggs > 0 && availableEggs >= reqEggs) {
+                            if (gameState.automaNestEggs >= reqEggs) {
+                                gameState.automaNestEggs -= reqEggs;
+                            } else {
+                                gameState.automaEggsOnCards -= reqEggs;
+                            }
                         }
-                    } else if (card.id === 'aio_360mm_cooler' || card.id === 'case_mid_tower' || card.id === 'case_itx_sff') {
-                        if (gameState.deck.length > 0) gameState.hand.push(gameState.deck.pop());
+                        const cardToPlay = gameState.reserve.splice(candidateCardIdx, 1)[0];
+                        gameState.automaFlock.push(cardToPlay);
+                        refillReserveDisplay();
+                        playedCard = true;
+                        logMsg += `Phase 2: Played ${cardToPlay.name} into Flock. `;
+                    }
+                }
+            }
+            if (!playedCard) {
+                logMsg += `Phase 2: Could not play component to Flock. `;
+            }
+
+            const eggAmount = (diff === 'hard') ? 2 : 1;
+            if (gameState.automaFlock.length > 0) {
+                gameState.automaEggsOnCards += eggAmount;
+                logMsg += `Phase 3: Placed ${eggAmount} egg(s) on components.`;
+            } else {
+                gameState.automaNestEggs += eggAmount;
+                logMsg += `Phase 3: Placed ${eggAmount} egg(s) on Nest.`;
+            }
+
+            gameState.message += ` | ${logMsg}`;
+        }
+
+        // BROWN POWER ACTIVATION & RESERVE REFILL
+        function refillReserveDisplay() {
+            while (gameState.reserve.length < 3 && gameState.deck.length > 0) {
+                gameState.reserve.push(gameState.deck.pop());
+            }
+        }
+
+        function triggerBrownPowersLeftToRight() {
+            let activatedEffects = [];
+
+            gameState.playerFlock.forEach((slot) => {
+                const card = slot.card;
+                const pType = card.powerType;
+
+                if (pType === 'egg_self') {
+                    if (slot.eggs < card.eggLimit) {
+                        slot.eggs += 1;
+                        activatedEffects.push(`Lay 1 Egg on ${card.name}`);
+                    }
+                } else if (pType === 'egg_self_2') {
+                    const room = card.eggLimit - slot.eggs;
+                    const add = Math.min(2, room);
+                    if (add > 0) {
+                        slot.eggs += add;
+                        activatedEffects.push(`Lay ${add} Egg(s) on ${card.name}`);
+                    }
+                } else if (pType === 'egg_any') {
+                    let targetSlot = gameState.playerFlock.find(s => s.eggs < s.card.eggLimit);
+                    if (targetSlot) {
+                        targetSlot.eggs += 1;
+                        activatedEffects.push(`Lay 1 Egg on ${targetSlot.card.name}`);
+                    } else {
+                        gameState.playerNestEggs += 1;
+                        activatedEffects.push(`Lay 1 Egg on Nest`);
+                    }
+                } else if (pType.startsWith('gain_')) {
+                    const fKey = pType.replace('gain_', '');
+                    if (FOOD_TYPES[fKey]) {
+                        gameState.playerFood.push(fKey);
+                        activatedEffects.push(`Gained ${FOOD_TYPES[fKey].name} Food`);
+                    }
+                } else if (pType === 'draw_card') {
+                    if (gameState.deck.length > 0) {
+                        const drawn = gameState.deck.pop();
+                        gameState.playerHand.push(drawn);
+                        activatedEffects.push(`Drew ${drawn.name}`);
+                    }
+                } else if (pType === 'tuck_hand') {
+                    if (gameState.playerHand.length > 0) {
+                        const tucked = gameState.playerHand.pop();
+                        slot.tuckedCards.push(tucked);
+                        activatedEffects.push(`Tucked ${tucked.name} under ${card.name}`);
+                    }
+                } else if (pType === 'tuck_reserve') {
+                    if (gameState.reserve.length > 0) {
+                        const tucked = gameState.reserve.pop();
+                        slot.tuckedCards.push(tucked);
+                        activatedEffects.push(`Tucked ${tucked.name} from Reserve`);
                     }
                 }
             });
+
+            refillReserveDisplay();
+
+            if (activatedEffects.length > 0) {
+                gameState.message += ` | Brown Powers: ${activatedEffects.join(', ')}.`;
+            }
         }
 
-        function openInstallModal() {
-            if (gameState.gameOver || gameState.currentTurn > gameState.turnsInRound) return;
+        // NEST ACTION 1: PLAY CARD
+        function openPlayCardModal() {
+            if (gameState.gameOver) return;
+            if (gameState.playerFlock.length >= 6) {
+                setMessage("Flock is already full (max 6 components)!");
+                return;
+            }
 
-            const container = document.getElementById('install-options-container');
+            const container = document.getElementById('play-card-list');
             container.innerHTML = '';
 
-            if (gameState.hand.length === 0) {
-                container.innerHTML = '<div style="color: var(--text-sub);">No component cards in hand to install.</div>';
+            const currentFlockSize = gameState.playerFlock.length;
+            let eggCost = 0;
+            if (currentFlockSize === 2 || currentFlockSize === 3) eggCost = 1;
+            if (currentFlockSize === 4 || currentFlockSize === 5) eggCost = 2;
+
+            const hasEggCost = totalPlayerEggsAvailable() >= eggCost;
+
+            if (gameState.playerHand.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-sub);">No component cards in hand to play.</div>';
             } else {
-                gameState.hand.forEach((card, handIdx) => {
+                gameState.playerHand.forEach((card, idx) => {
+                    const canAffordFood = canAffordFoodCost(card.foodCost);
+                    const canPlay = canAffordFood && hasEggCost;
+
                     const row = document.createElement('div');
                     row.style.background = 'rgba(15,23,42,0.8)';
                     row.style.padding = '10px';
                     row.style.borderRadius = '8px';
                     row.style.display = 'flex';
-                    row.style.justifySpaceBetween = 'space-between';
+                    row.style.justifyContent = 'space-between';
                     row.style.alignItems = 'center';
 
-                    // Check slot availability and slot paste cost in habitat
-                    const slots = gameState.playerBoard[card.habitat];
-                    const nextSlotIdx = slots.findIndex(s => s === null);
-
-                    let pasteSlotCost = 0;
-                    if (nextSlotIdx === 1 || nextSlotIdx === 2) pasteSlotCost = 1;
-                    if (nextSlotIdx === 3 || nextSlotIdx === 4) pasteSlotCost = 2;
-
-                    // Check resource cost
-                    let canAffordResources = true;
-                    if (card.cost.silicon && (gameState.resources.silicon || 0) < card.cost.silicon) canAffordResources = false;
-                    if (card.cost.power && (gameState.resources.power || 0) < card.cost.power) canAffordResources = false;
-                    if (card.cost.cooling && (gameState.resources.cooling || 0) < card.cost.cooling) canAffordResources = false;
-                    if ((gameState.resources.paste || 0) < pasteSlotCost) canAffordResources = false;
-
-                    const isAvailable = nextSlotIdx !== -1 && canAffordResources;
-
-                    let costStr = Object.entries(card.cost).map(([k,v]) => `${v} ${k.toUpperCase()}`).join(', ');
-                    if (pasteSlotCost > 0) costStr += ` + ${pasteSlotCost} 🧪 Slot Cost`;
+                    const costStr = card.foodCost.map(f => `${FOOD_TYPES[f].icon} ${FOOD_TYPES[f].name}`).join(', ');
 
                     row.innerHTML = `
                         <div style="text-align: left;">
                             <div style="font-weight: bold; color: var(--text-main);">${card.name} (${card.vp} VP)</div>
-                            <div style="font-size: 0.75rem; color: var(--text-sub);">Habitat: ${card.habitat.toUpperCase()} | Cost: ${costStr}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-sub);">Food: ${costStr} | Egg Cost: ${eggCost} Egg(s)</div>
                         </div>
-                        <button class="btn-action" style="width: auto; padding: 6px 12px; background: ${isAvailable ? 'var(--accent-blue)' : '#475569'}; color: white;" ${!isAvailable ? 'disabled' : ''} onclick="confirmInstallCard(${handIdx}, ${nextSlotIdx})">
-                            ${nextSlotIdx === -1 ? 'Habitat Full' : (!canAffordResources ? 'Cannot Afford' : 'Install')}
+                        <button class="btn-action" style="width: auto; padding: 6px 12px; background: ${canPlay ? 'var(--accent-blue)' : '#475569'}; color: white;" ${!canPlay ? 'disabled' : ''} onclick="confirmPlayCard(${idx})">
+                            ${!canAffordFood ? 'Cannot Afford Food' : (!hasEggCost ? 'Need Eggs' : 'Play Card')}
                         </button>
                     `;
                     container.appendChild(row);
                 });
             }
 
-            document.getElementById('install-modal').style.display = 'flex';
+            document.getElementById('play-card-modal').style.display = 'flex';
         }
 
-        function confirmInstallCard(handIdx, slotIdx) {
-            closeModal('install-modal');
+        function confirmPlayCard(handIdx) {
+            closeModal('play-card-modal');
+            const card = gameState.playerHand.splice(handIdx, 1)[0];
 
-            const card = gameState.hand.splice(handIdx, 1)[0];
+            autoDeductFoodCost(card.foodCost);
+            deductEggsForFlockCost();
 
-            let pasteSlotCost = 0;
-            if (slotIdx === 1 || slotIdx === 2) pasteSlotCost = 1;
-            if (slotIdx === 3 || slotIdx === 4) pasteSlotCost = 2;
+            gameState.playerFlock.push({ card: card, eggs: 0, tuckedCards: [] });
+            setMessage(`Played ${card.name} into your Flock!`);
 
-            // Deduct costs
-            if (card.cost.silicon) gameState.resources.silicon -= card.cost.silicon;
-            if (card.cost.power) gameState.resources.power -= card.cost.power;
-            if (card.cost.cooling) gameState.resources.cooling -= card.cost.cooling;
-            gameState.resources.paste -= pasteSlotCost;
+            afterNestActionTurn();
+        }
 
-            gameState.playerBoard[card.habitat][slotIdx] = card;
+        // NEST ACTION 2: DRAW CARDS
+        function openDrawCardsModal() {
+            if (gameState.gameOver) return;
+            tempDrawSelection = [];
 
-            // Trigger "When Installed" powers
-            if (card.powerType === 'installed') {
-                if (card.id === 'cpu_ryzen9') {
-                    gameState.resources.silicon += 1;
-                    gameState.resources.power += 1;
-                } else if (card.id === 'gpu_rtx_4090') {
-                    if (gameState.deck.length > 0) gameState.hand.push(gameState.deck.pop());
-                    if (gameState.deck.length > 0) gameState.hand.push(gameState.deck.pop());
-                } else if (card.id === 'gpu_rtx_4070ti' || card.id === 'ram_ddr5_32gb' || card.id === 'sleeved_cables') {
-                    gameState.resources.paste += 1;
-                } else if (card.id === 'psu_1200w_platinum' || card.id === 'psu_1500w_titanium') {
-                    gameState.resources.power += 2;
-                } else if (card.id === 'cooler_custom_loop') {
-                    card.pasteCount = (card.pasteCount || 0) + 2;
+            const container = document.getElementById('draw-cards-options');
+            container.innerHTML = '';
+
+            let html = '<div style="font-size: 0.85rem; color: var(--text-sub); text-align: left; margin-bottom: 8px;">Click items to select up to 2 cards:</div>';
+
+            html += '<div style="font-weight: bold; font-size: 0.8rem; color: var(--accent-blue); text-align: left; margin-top: 5px;">Face-Up Reserve Supply:</div>';
+            html += '<div style="display: flex; gap: 8px; margin: 6px 0;">';
+            gameState.reserve.forEach((c, idx) => {
+                if (c) {
+                    html += `
+                        <button id="draw-res-${idx}" class="btn-action" style="flex:1; text-align: left; font-size: 0.75rem; padding: 6px; height: auto;" onclick="toggleDrawSelection('reserve', ${idx})">
+                            <div style="font-weight: bold;">${c.name} (${c.vp} VP)</div>
+                            <div style="color: var(--text-sub);">Food side: ${c.foodSide}</div>
+                        </button>
+                    `;
+                }
+            });
+            html += '</div>';
+
+            html += '<div style="font-weight: bold; font-size: 0.8rem; color: var(--accent-amber); text-align: left; margin-top: 10px;">Food Supply Deck:</div>';
+            html += '<div style="display: flex; gap: 8px; margin: 6px 0;">';
+            html += `
+                <button id="draw-food-top1" class="btn-action" style="flex:1; font-size: 0.8rem; padding: 8px;" onclick="toggleDrawSelection('food_deck', 0)">
+                    📦 Draw 1 Food Card from Top
+                </button>
+                <button id="draw-food-top2" class="btn-action" style="flex:1; font-size: 0.8rem; padding: 8px;" onclick="toggleDrawSelection('food_deck', 1)">
+                    📦 Draw 2nd Food Card from Top
+                </button>
+            `;
+            html += '</div>';
+
+            container.innerHTML = html;
+            updateDrawModalUI();
+            document.getElementById('draw-cards-modal').style.display = 'flex';
+        }
+
+        function toggleDrawSelection(type, index) {
+            const key = `${type}_${index}`;
+            const existingIdx = tempDrawSelection.findIndex(item => item.key === key);
+
+            if (existingIdx !== -1) {
+                tempDrawSelection.splice(existingIdx, 1);
+            } else {
+                if (tempDrawSelection.length < 2) {
+                    tempDrawSelection.push({ key: key, type: type, index: index });
                 }
             }
-
-            setMessage(`Installed ${card.name} into ${card.habitat.toUpperCase()} habitat.`);
-            endPlayerTurn();
+            updateDrawModalUI();
         }
 
-        function endPlayerTurn() {
-            // Execute Automa AI turn
+        function updateDrawModalUI() {
+            ['reserve_0', 'reserve_1', 'reserve_2', 'food_deck_0', 'food_deck_1'].forEach(k => {
+                let btnId = '';
+                if (k.startsWith('reserve')) btnId = `draw-res-${k.split('_')[1]}`;
+                if (k === 'food_deck_0') btnId = 'draw-food-top1';
+                if (k === 'food_deck_1') btnId = 'draw-food-top2';
+
+                const el = document.getElementById(btnId);
+                if (el) {
+                    const isSel = tempDrawSelection.some(item => item.key === k);
+                    if (isSel) {
+                        el.style.borderColor = 'var(--accent-green)';
+                        el.style.background = 'rgba(52, 211, 153, 0.2)';
+                    } else {
+                        el.style.borderColor = '#475569';
+                        el.style.background = 'var(--card-bg)';
+                    }
+                }
+            });
+
+            const confirmBtn = document.getElementById('confirm-draw-btn');
+            confirmBtn.disabled = tempDrawSelection.length === 0;
+            confirmBtn.textContent = `Confirm Draw (${tempDrawSelection.length}/2 Selected)`;
+        }
+
+        function confirmDrawSelection() {
+            closeModal('draw-cards-modal');
+
+            let drawnSummary = [];
+
+            const resSelections = tempDrawSelection.filter(s => s.type === 'reserve').sort((a,b) => b.index - a.index);
+            const foodSelections = tempDrawSelection.filter(s => s.type === 'food_deck');
+
+            resSelections.forEach(sel => {
+                const card = gameState.reserve.splice(sel.index, 1)[0];
+                if (card) {
+                    gameState.playerHand.push(card);
+                    drawnSummary.push(card.name);
+                }
+            });
+
+            foodSelections.forEach(() => {
+                if (gameState.foodDeck.length > 0) {
+                    const card = gameState.foodDeck.pop();
+                    gameState.playerFood.push(card.foodSide);
+                    drawnSummary.push(`${FOOD_TYPES[card.foodSide].icon} ${FOOD_TYPES[card.foodSide].name} Food`);
+                }
+            });
+
+            setMessage(`Drew 2 items: ${drawnSummary.join(', ')}.`);
+            afterNestActionTurn();
+        }
+
+        // NEST ACTION 3: LAY EGGS
+        function openLayEggsModal() {
+            if (gameState.gameOver) return;
+
+            tempEggDistribution = [];
+            const container = document.getElementById('lay-eggs-options');
+            container.innerHTML = '';
+
+            let html = '<div style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 10px;">Distribute up to 3 eggs across valid targets:</div>';
+
+            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15,23,42,0.8); padding: 8px 12px; border-radius: 8px;">
+                    <div>
+                        <div style="font-weight: bold; color: var(--accent-amber);">🪺 Main Player Nest</div>
+                        <div style="font-size: 0.75rem; color: var(--text-sub);">Current Eggs: ${gameState.playerNestEggs}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button class="btn-action" style="width:30px; height:30px; padding:0;" onclick="adjustEggTarget('nest', -1)">-</button>
+                        <span id="egg-val-nest" style="font-weight:bold; font-size:1.1rem; min-width: 20px;">0</span>
+                        <button class="btn-action" style="width:30px; height:30px; padding:0;" onclick="adjustEggTarget('nest', 1)">+</button>
+                    </div>
+                </div>
+            `;
+
+            gameState.playerFlock.forEach((slot, idx) => {
+                const maxAllowed = slot.card.eggLimit - slot.eggs;
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15,23,42,0.8); padding: 8px 12px; border-radius: 8px; margin-top: 6px;">
+                        <div style="text-align: left;">
+                            <div style="font-weight: bold; color: var(--text-main);">${slot.card.name}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-sub);">Eggs: ${slot.eggs} / ${slot.card.eggLimit} Max</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button class="btn-action" style="width:30px; height:30px; padding:0;" ${maxAllowed <= 0 ? 'disabled' : ''} onclick="adjustEggTarget(${idx}, -1)">-</button>
+                            <span id="egg-val-${idx}" style="font-weight:bold; font-size:1.1rem; min-width: 20px;">0</span>
+                            <button class="btn-action" style="width:30px; height:30px; padding:0;" ${maxAllowed <= 0 ? 'disabled' : ''} onclick="adjustEggTarget(${idx}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('lay-eggs-modal').style.display = 'flex';
+        }
+
+        function adjustEggTarget(target, delta) {
+            const currentTotal = tempEggDistribution.reduce((a, b) => a + b.count, 0);
+
+            let existing = tempEggDistribution.find(e => e.target === target);
+            if (!existing) {
+                existing = { target: target, count: 0 };
+                tempEggDistribution.push(existing);
+            }
+
+            if (delta > 0) {
+                if (currentTotal >= 3) return;
+                if (target !== 'nest') {
+                    const slot = gameState.playerFlock[target];
+                    if (slot.eggs + existing.count >= slot.card.eggLimit) return;
+                }
+                existing.count += 1;
+            } else {
+                if (existing.count > 0) existing.count -= 1;
+            }
+
+            const valEl = document.getElementById(`egg-val-${target}`);
+            if (valEl) valEl.textContent = existing.count;
+        }
+
+        function confirmLayEggs() {
+            closeModal('lay-eggs-modal');
+
+            let laidSummary = 0;
+            tempEggDistribution.forEach(item => {
+                if (item.target === 'nest') {
+                    gameState.playerNestEggs += item.count;
+                    laidSummary += item.count;
+                } else if (typeof item.target === 'number' && gameState.playerFlock[item.target]) {
+                    gameState.playerFlock[item.target].eggs += item.count;
+                    laidSummary += item.count;
+                }
+            });
+
+            setMessage(`Laid ${laidSummary} egg(s) across Nest / Flock components.`);
+            afterNestActionTurn();
+        }
+
+        function afterNestActionTurn() {
+            triggerBrownPowersLeftToRight();
             executeAutomaTurn();
 
-            gameState.currentTurn += 1;
-
-            if (gameState.currentTurn > gameState.turnsInRound) {
-                // End of round
-                if (gameState.round < 4) {
-                    gameState.round += 1;
-                    gameState.turnsInRound = [8, 7, 6, 5][gameState.round - 1];
-                    gameState.currentTurn = 1;
-
-                    // Score end-of-round goal
-                    const currentGoalObj = ROUND_GOALS[gameState.round - 2];
-                    const playerVal = currentGoalObj.check(gameState);
-                    const automaBonusVal = Math.floor(Math.random() * 3) + gameState.round;
-
-                    if (playerVal >= automaBonusVal) {
-                        gameState.resources.paste += 1;
-                        setMessage(`End of Round ${gameState.round - 1}: Won goal standard! (+1 Thermal Paste 🧪). Round ${gameState.round} begins.`);
-                    } else {
-                        setMessage(`End of Round ${gameState.round - 1} completed. Round ${gameState.round} begins.`);
-                    }
-                } else {
-                    // Game Over Scoring
-                    calculateFinalScores();
-                    return;
-                }
+            // Game End Condition Check: 6 cards in player flock or automa flock
+            if (gameState.playerFlock.length >= 6 || gameState.automaFlock.length >= 6) {
+                calculateFinalScores();
+                return;
             }
 
+            gameState.turn += 1;
             updateUI();
             saveStateToUrl();
         }
 
-        function executeAutomaTurn() {
-            // Automa decision simulation
-            const difficultyMult = { easy: 0.8, normal: 1.0, hard: 1.25, expert: 1.5 }[gameState.automaLevel];
-
-            const actionChoice = Math.floor(Math.random() * 3);
-            if (actionChoice === 0) {
-                // Automa steals top card from market & scores base VP
-                if (gameState.market.length > 0) {
-                    const card = gameState.market.shift();
-                    gameState.automaCollection.push(card);
-                    gameState.automaScore += Math.round((card.vp || 4) * difficultyMult);
-                    if (gameState.deck.length > 0) gameState.market.push(gameState.deck.pop());
-                }
-            } else if (actionChoice === 1) {
-                // Automa scores fixed VP
-                gameState.automaScore += Math.round(5 * difficultyMult);
-            } else {
-                // Automa draws from deck directly
-                if (gameState.deck.length > 0) {
-                    const card = gameState.deck.pop();
-                    gameState.automaCollection.push(card);
-                    gameState.automaScore += Math.round((card.vp || 5) * difficultyMult);
-                }
-            }
-        }
-
+        // END GAME SCORING & PERSISTENCE
         function calculateFinalScores() {
             gameState.gameOver = true;
 
-            // Player Base Card VP
-            let playerBaseVP = 0;
-            ['processing', 'memory', 'chassis'].forEach(h => {
-                gameState.playerBoard[h].forEach(card => {
-                    if (card) playerBaseVP += card.vp;
-                });
+            // Player Scores
+            const playerCardVP = gameState.playerFlock.reduce((acc, slot) => acc + slot.card.vp, 0);
+            const playerEggVP = gameState.playerNestEggs + countPlayerEggsOnCards();
+            const playerTuckedVP = gameState.playerFlock.reduce((acc, slot) => acc + (slot.tuckedCards ? slot.tuckedCards.length : 0), 0);
+
+            // Objective Bonus VP
+            const objChecker = OBJECTIVES[gameState.objective].checkCard;
+            let playerObjVP = 0;
+            gameState.playerFlock.forEach(slot => {
+                if (objChecker(slot.card)) {
+                    playerObjVP += slot.eggs;
+                }
             });
 
-            // Paste VP
-            const totalPaste = countTotalPaste(gameState.playerBoard);
+            const totalPlayerScore = playerCardVP + playerEggVP + playerTuckedVP + playerObjVP;
 
-            // Tucked Card VP
-            const totalTucked = countTotalTucked(gameState.playerBoard);
+            // Automa Scores (Official Wingspan Pocket Rules)
+            const automaCardVP = gameState.automaFlock.length * 3;
+            const automaNestEggVP = gameState.automaNestEggs * 3;
+            const automaCardEggVP = gameState.automaEggsOnCards * 1;
+            const automaTuckedVP = gameState.automaTuckedCount * 1;
+            const automaObjVP = Math.round(gameState.automaFlock.length * 0.5);
 
-            // Secret Benchmark Bonus VP
-            let benchmarkVP = 0;
-            if (gameState.benchmarkObjective === 'processing_guru') {
-                benchmarkVP = gameState.playerBoard.processing.filter(c => c !== null).length * 2;
-            } else if (gameState.benchmarkObjective === 'storage_beast') {
-                benchmarkVP = countTotalTucked(gameState.playerBoard) * 3;
-            } else if (gameState.benchmarkObjective === 'thermal_king') {
-                benchmarkVP = totalPaste * 2;
-            } else if (gameState.benchmarkObjective === 'efficiency_master') {
-                let lowCostCount = 0;
-                ['processing', 'memory', 'chassis'].forEach(h => {
-                    gameState.playerBoard[h].forEach(c => {
-                        if (c) {
-                            const totalResCost = Object.values(c.cost).reduce((a, b) => a + b, 0);
-                            if (totalResCost <= 1) lowCostCount++;
-                        }
-                    });
-                });
-                benchmarkVP = lowCostCount * 3;
-            }
+            const totalAutomaScore = automaCardVP + automaNestEggVP + automaCardEggVP + automaTuckedVP + automaObjVP;
 
-            const totalPlayerScore = playerBaseVP + totalPaste + totalTucked + benchmarkVP;
-            const totalAutomaScore = gameState.automaScore;
-
-            saveScore(totalPlayerScore > totalAutomaScore ? 'Win' : 'Loss', totalPlayerScore, totalAutomaScore);
-
-            document.getElementById('final-player-score').textContent = totalPlayerScore;
-            document.getElementById('final-automa-score').textContent = totalAutomaScore;
+            const outcome = totalPlayerScore >= totalAutomaScore ? 'Win' : 'Loss';
+            saveScore(outcome, totalPlayerScore, totalAutomaScore);
 
             const goTitle = document.getElementById('go-title');
             const goMsg = document.getElementById('go-msg');
 
-            if (totalPlayerScore > totalAutomaScore) {
-                goTitle.textContent = "BENCHMARK VICTORY!";
+            if (outcome === 'Win') {
+                goTitle.textContent = "VICTORY!";
                 goTitle.style.color = "var(--accent-green)";
-                goMsg.textContent = `Your custom rig out-benchmarked the Automa ${gameState.automaLevel.toUpperCase()} AI!`;
+                goMsg.textContent = `Your stormo of components beat the Automa AI!`;
             } else {
-                goTitle.textContent = "BENCHMARK DEFEAT";
+                goTitle.textContent = "DEFEAT";
                 goTitle.style.color = "var(--accent-rose)";
-                goMsg.textContent = `The Automa ${gameState.automaLevel.toUpperCase()} AI beat your rig's benchmark score.`;
+                goMsg.textContent = `The Automa AI outscored your stormo of components.`;
             }
+
+            document.getElementById('scoring-breakdown-details').innerHTML = `
+                <div><strong>Player Card VP:</strong> ${playerCardVP}</div>
+                <div><strong>Player Egg VP:</strong> ${playerEggVP}</div>
+                <div><strong>Player Tucked Cards VP:</strong> ${playerTuckedVP}</div>
+                <div><strong>Player Objective (${OBJECTIVES[gameState.objective].name}) VP:</strong> ${playerObjVP}</div>
+                <div style="border-top: 1px solid #475569; margin: 4px 0; padding-top: 4px; font-weight: bold; color: var(--accent-green);">
+                    Total Player Score: ${totalPlayerScore}
+                </div>
+                <br/>
+                <div><strong>Automa Components VP (3 each):</strong> ${automaCardVP}</div>
+                <div><strong>Automa Nest Eggs VP (3 each):</strong> ${automaNestEggVP}</div>
+                <div><strong>Automa Component Eggs VP (1 each):</strong> ${automaCardEggVP}</div>
+                <div><strong>Automa Tucked Cards VP:</strong> ${automaTuckedVP}</div>
+                <div><strong>Automa Objective Bonus VP:</strong> ${automaObjVP}</div>
+                <div style="border-top: 1px solid #475569; margin: 4px 0; padding-top: 4px; font-weight: bold; color: var(--accent-rose);">
+                    Total Automa Score: ${totalAutomaScore}
+                </div>
+            `;
 
             document.getElementById('game-over-modal').style.display = 'flex';
             updateUI();
+            saveStateToUrl();
         }
 
-        function updateUI() {
-            document.getElementById('round-val').textContent = `${gameState.round} / 4`;
-            document.getElementById('turns-val').textContent = Math.max(0, gameState.turnsInRound - gameState.currentTurn + 1);
-
-            const currentGoal = ROUND_GOALS[gameState.round - 1];
-            document.getElementById('goal-val').textContent = currentGoal ? currentGoal.title : 'Final Scoring';
-
-            document.getElementById('automa-level-val').textContent = gameState.automaLevel.toUpperCase();
-            document.getElementById('automa-score-val').textContent = gameState.automaScore;
-
-            // Resources
-            document.getElementById('res-silicon').textContent = gameState.resources.silicon || 0;
-            document.getElementById('res-power').textContent = gameState.resources.power || 0;
-            document.getElementById('res-cooling').textContent = gameState.resources.cooling || 0;
-            document.getElementById('res-paste').textContent = gameState.resources.paste || 0;
-            document.getElementById('res-hand-count').textContent = gameState.hand.length;
-
-            document.getElementById('log-box').textContent = gameState.message;
-
-            // Render Habitats
-            ['processing', 'memory', 'chassis'].forEach(habitat => {
-                const container = document.getElementById(`${habitat}-slots`);
-                container.innerHTML = '';
-
-                gameState.playerBoard[habitat].forEach((card, slotIdx) => {
-                    const slotEl = document.createElement('div');
-                    let pasteSlotCost = 0;
-                    if (slotIdx === 1 || slotIdx === 2) pasteSlotCost = 1;
-                    if (slotIdx === 3 || slotIdx === 4) pasteSlotCost = 2;
-
-                    if (card) {
-                        slotEl.className = 'card-slot installed';
-                        slotEl.innerHTML = `
-                            <div class="card-header-row">
-                                <span class="card-name">${card.name}</span>
-                                <span class="card-vp">${card.vp} VP</span>
-                            </div>
-                            <div class="card-effect-desc">${card.effect}</div>
-                            <div class="card-tokens-row">
-                                <span style="color: var(--paste-color);">🧪 ${card.pasteCount || 0}</span>
-                                <span style="color: var(--accent-blue);">💾 ${card.tuckedCount || 0}</span>
-                            </div>
-                        `;
-                    } else {
-                        slotEl.className = 'card-slot';
-                        slotEl.innerHTML = `
-                            <div style="font-size: 0.75rem; color: var(--text-sub);">Empty Slot ${slotIdx + 1}</div>
-                            ${pasteSlotCost > 0 ? `<div class="card-slot empty-cost-badge">+${pasteSlotCost} 🧪</div>` : ''}
-                        `;
-                    }
-                    container.appendChild(slotEl);
-                });
-            });
-
-            // Render Market Display
-            document.getElementById('deck-count-val').textContent = gameState.deck.length;
-            const marketContainer = document.getElementById('market-display-row');
-            marketContainer.innerHTML = '';
-
-            gameState.market.forEach(card => {
-                const cardEl = createCardDisplayElement(card);
-                marketContainer.appendChild(cardEl);
-            });
-
-            // Render Hand
-            const handContainer = document.getElementById('hand-cards-row');
-            handContainer.innerHTML = '';
-
-            if (gameState.hand.length === 0) {
-                handContainer.innerHTML = '<div style="font-size: 0.85rem; color: var(--text-sub);">No component cards in hand.</div>';
-            } else {
-                gameState.hand.forEach(card => {
-                    const cardEl = createCardDisplayElement(card);
-                    handContainer.appendChild(cardEl);
-                });
-            }
-
-            // Benchmark summary
-            document.getElementById('benchmark-summary').innerHTML = `
-                <div><strong>Secret Objective:</strong> ${getBenchmarkTitle(gameState.benchmarkObjective)}</div>
-                <div><strong>Current Installed Parts:</strong> ${countTotalParts(gameState.playerBoard)} | <strong>Thermal Paste Placed:</strong> ${countTotalPaste(gameState.playerBoard)} 🧪 | <strong>Tucked Cards:</strong> ${countTotalTucked(gameState.playerBoard)} 💾</div>
-            `;
-        }
-
-        function createCardDisplayElement(card) {
-            const cardEl = document.createElement('div');
-            cardEl.className = 'card-slot installed';
-            cardEl.style.minWidth = '140px';
-
-            const costStr = Object.entries(card.cost).map(([k,v]) => `${v}${k[0].toUpperCase()}`).join(' ');
-
-            cardEl.innerHTML = `
-                <div class="card-header-row">
-                    <span class="card-name">${card.name}</span>
-                    <span class="card-vp">${card.vp} VP</span>
-                </div>
-                <div class="card-cost-list" style="color: var(--accent-blue);">Req: ${costStr}</div>
-                <div class="card-effect-desc">${card.effect}</div>
-            `;
-            return cardEl;
-        }
-
-        function getBenchmarkTitle(id) {
-            const titles = {
-                processing_guru: "Processing Power (+2 VP per Processing Part)",
-                storage_beast: "Storage Architect (+3 VP per Part with Tucked Data)",
-                thermal_king: "Liquid Cooled (+2 VP per Thermal Paste)",
-                efficiency_master: "Eco Build (+3 VP for Parts costing <= 1 Resource)"
-            };
-            return titles[id] || id;
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
         }
 
         function setMessage(msg) {
@@ -1241,8 +1298,104 @@
             document.getElementById('log-box').textContent = msg;
         }
 
-        function closeModal(id) {
-            document.getElementById(id).style.display = 'none';
+        function updateUI() {
+            document.getElementById('turn-val').textContent = gameState.turn;
+            document.getElementById('flock-count-val').textContent = `${gameState.playerFlock.length} / 6`;
+            document.getElementById('nest-eggs-val').textContent = gameState.playerNestEggs;
+            document.getElementById('objective-val').textContent = OBJECTIVES[gameState.objective].name;
+            document.getElementById('automa-score-val').textContent = Math.round(gameState.automaNestEggs * 3 + gameState.automaEggsOnCards + gameState.automaTuckedCount + gameState.automaFlock.length * 3);
+
+            document.getElementById('food-count-val').textContent = gameState.playerFood.length;
+            document.getElementById('hand-count-val').textContent = gameState.playerHand.length;
+            document.getElementById('deck-count-val').textContent = gameState.deck.length;
+            document.getElementById('food-deck-count-val').textContent = gameState.foodDeck.length;
+
+            document.getElementById('log-box').textContent = gameState.message;
+
+            document.getElementById('automa-status-content').innerHTML = `
+                <div><strong>Difficulty:</strong> ${gameState.automaDifficulty.toUpperCase()}</div>
+                <div><strong>Flock Components:</strong> ${gameState.automaFlock.length} / 6</div>
+                <div><strong>Nest Eggs:</strong> ${gameState.automaNestEggs} (3 VP each) | <strong>Component Eggs:</strong> ${gameState.automaEggsOnCards} (1 VP each)</div>
+                <div><strong>Tucked Cards:</strong> ${gameState.automaTuckedCount} | <strong>Food Cards:</strong> ${gameState.automaFoodCards.length}</div>
+            `;
+
+            const foodContainer = document.getElementById('player-food-list');
+            foodContainer.innerHTML = '';
+            if (gameState.playerFood.length === 0) {
+                foodContainer.innerHTML = '<span style="font-size: 0.8rem; color: var(--text-sub);">No food cards in reserve.</span>';
+            } else {
+                gameState.playerFood.forEach(fKey => {
+                    const fInfo = FOOD_TYPES[fKey];
+                    const pill = document.createElement('div');
+                    pill.className = 'food-pill';
+                    pill.style.color = fInfo.color;
+                    pill.innerHTML = `<span>${fInfo.icon}</span> <span>${fInfo.name}</span>`;
+                    foodContainer.appendChild(pill);
+                });
+            }
+
+            const handContainer = document.getElementById('player-hand-row');
+            handContainer.innerHTML = '';
+            if (gameState.playerHand.length === 0) {
+                handContainer.innerHTML = '<div style="font-size: 0.8rem; color: var(--text-sub);">No component cards in hand.</div>';
+            } else {
+                gameState.playerHand.forEach(card => {
+                    handContainer.appendChild(createCardDisplayElement(card));
+                });
+            }
+
+            const reserveContainer = document.getElementById('reserve-cards-row');
+            reserveContainer.innerHTML = '';
+            gameState.reserve.forEach(card => {
+                if (card) {
+                    reserveContainer.appendChild(createCardDisplayElement(card));
+                }
+            });
+
+            const flockContainer = document.getElementById('player-flock-grid');
+            flockContainer.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                const slotEl = document.createElement('div');
+                const slotData = gameState.playerFlock[i];
+
+                if (slotData) {
+                    slotEl.className = 'flock-slot occupied';
+                    slotEl.innerHTML = `
+                        <div class="card-header-row">
+                            <span class="card-name">${slotData.card.name}</span>
+                            <span class="card-vp">${slotData.card.vp} VP</span>
+                        </div>
+                        <div class="card-effect-desc">${slotData.card.powerDesc}</div>
+                        <div class="card-tokens-row">
+                            <span style="color: var(--accent-amber);">🪺 ${slotData.eggs} / ${slotData.card.eggLimit}</span>
+                            <span style="color: var(--accent-blue);">💾 ${slotData.tuckedCards ? slotData.tuckedCards.length : 0}</span>
+                        </div>
+                    `;
+                } else {
+                    slotEl.className = 'flock-slot';
+                    slotEl.innerHTML = `<div style="font-size: 0.75rem; color: var(--text-sub);">Slot ${i + 1}</div>`;
+                }
+                flockContainer.appendChild(slotEl);
+            }
+        }
+
+        function createCardDisplayElement(card) {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'flock-slot occupied';
+            cardEl.style.minWidth = '140px';
+
+            const costStr = card.foodCost.map(f => `${FOOD_TYPES[f].icon}`).join(' ');
+
+            cardEl.innerHTML = `
+                <div class="card-header-row">
+                    <span class="card-name">${card.name}</span>
+                    <span class="card-vp">${card.vp} VP</span>
+                </div>
+                <div class="card-cost-list">Req: ${costStr}</div>
+                <div class="card-effect-desc">${card.powerDesc}</div>
+                <div style="font-size: 0.68rem; color: var(--accent-green);">Food side: ${FOOD_TYPES[card.foodSide].icon} ${card.foodSide}</div>
+            `;
+            return cardEl;
         }
 
         // STATE PERSISTENCE & LEADERBOARD
@@ -1260,7 +1413,7 @@
             if (!hash) return false;
             try {
                 const loaded = JSON.parse(atob(hash));
-                if (loaded && loaded.playerBoard) {
+                if (loaded && loaded.playerFlock) {
                     gameState = loaded;
                     return true;
                 }
@@ -1271,7 +1424,7 @@
         }
 
         function saveScore(outcome, playerScore, automaScore) {
-            const scores = JSON.parse(localStorage.getItem('pcparts-leaderboard') || '[]');
+            const scores = JSON.parse(localStorage.getItem('wingspan-pocket-leaderboard') || '[]');
             scores.push({
                 playerScore,
                 automaScore,
@@ -1280,17 +1433,17 @@
             });
             scores.sort((a, b) => b.playerScore - a.playerScore);
             const top10 = scores.slice(0, 10);
-            localStorage.setItem('pcparts-leaderboard', JSON.stringify(top10));
+            localStorage.setItem('wingspan-pocket-leaderboard', JSON.stringify(top10));
             renderLeaderboard();
         }
 
         function renderLeaderboard() {
-            const scores = JSON.parse(localStorage.getItem('pcparts-leaderboard') || '[]');
+            const scores = JSON.parse(localStorage.getItem('wingspan-pocket-leaderboard') || '[]');
             const tbody = document.getElementById('leaderboard-body');
             tbody.innerHTML = '';
 
             if (scores.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5">No scores saved yet. Complete a rig benchmark!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5">No scores saved yet. Complete a game!</td></tr>';
                 return;
             }
 
@@ -1308,21 +1461,11 @@
         }
 
         // BINDINGS & INIT
-        document.getElementById('install-btn').onclick = openInstallModal;
-        document.getElementById('refresh-market-btn').onclick = () => {
-            if (gameState.deck.length >= 3) {
-                gameState.market = [gameState.deck.pop(), gameState.deck.pop(), gameState.deck.pop()];
-                setMessage("Reset market with 3 new component cards.");
-                updateUI();
-                saveStateToUrl();
-            }
-        };
-
         document.getElementById('start-game-btn').onclick = () => {
-            const automaSel = document.getElementById('automa-select').value;
-            const benchSel = document.getElementById('benchmark-card-select').value;
+            const difficultySel = document.getElementById('automa-difficulty-select').value;
+            const objSel = document.getElementById('objective-select').value;
             closeModal('setup-modal');
-            initGame(automaSel, benchSel);
+            initGame(difficultySel, objSel);
         };
 
         document.getElementById('play-again-btn').onclick = () => {
