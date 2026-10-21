@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mint Works - Solitaire Board Game</title>
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#1abc9c">
+    <style>
+        :root {
+            --bg-color: #121c24;
+            --panel-bg: #1e2b37;
+            --card-bg: #2a3a4b;
+            --accent-color: #1abc9c;
+            --mint-color: #2ecc71;
+            --star-color: #f1c40f;
+            --text-color: #ecf0f1;
+            --subtext-color: #bdc3c7;
+            --culture-color: #e74c3c;
+            --production-color: #3498db;
+            --utility-color: #9b59b6;
+            --deed-color: #f39c12;
+            --border-color: #34495e;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--panel-bg);
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .home-link {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            opacity: 0.9;
+            transition: opacity 0.2s;
+        }
+
+        .home-link:hover {
+            opacity: 1;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.3rem;
+            letter-spacing: 1.5px;
+            color: var(--accent-color);
+            text-transform: uppercase;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 650px;
+            padding: 15px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Stats Bar */
+        #stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background-color: var(--panel-bg);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--subtext-color);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .stat-val {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-color);
+            margin-top: 2px;
+        }
+
+        .mint-badge {
+            color: var(--mint-color);
+            font-weight: bold;
+        }
+
+        .star-badge {
+            color: var(--star-color);
+            font-weight: bold;
+        }
+
+        /* Players Overview */
+        #players-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .player-card {
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            text-align: center;
+            position: relative;
+            transition: border-color 0.3s;
+        }
+
+        .player-card.active-turn {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(26, 188, 156, 0.4);
+        }
+
+        .player-name {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .first-player-icon {
+            font-size: 0.8rem;
+            background: #f39c12;
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .player-resources {
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* Message Box */
+        #message-box {
+            background-color: var(--panel-bg);
+            color: var(--text-color);
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            min-height: 2.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.9rem;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+            line-height: 1.4;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-color);
+            margin: 5px 0 2px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Locations Grid */
+        .locations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .location-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s, border-color 0.2s;
+            position: relative;
+        }
+
+        .location-card.closed {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+
+        .location-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 5px;
+            margin-bottom: 6px;
+        }
+
+        .location-name {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .location-type {
+            font-size: 0.65rem;
+            padding: 2px 5px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .location-cost {
+            font-size: 0.8rem;
+            color: var(--mint-color);
+            margin-bottom: 6px;
+        }
+
+        .location-effect {
+            font-size: 0.75rem;
+            color: var(--subtext-color);
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .location-slots {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .slot {
+            flex: 1;
+            padding: 4px;
+            background: rgba(0,0,0,0.3);
+            border: 1px dashed var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--subtext-color);
+        }
+
+        .slot.occupied {
+            background: var(--accent-color);
+            color: #000;
+            border-style: solid;
+            font-weight: bold;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 8px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background-color: var(--accent-color);
+            color: #000;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        .action-btn:disabled {
+            background-color: #4a5a6a;
+            color: #7a8a9a;
+            cursor: not-allowed;
+        }
+
+        /* Plan Cards */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+
+        .plan-card {
+            background: linear-gradient(135deg, var(--card-bg) 0%, #1e2b37 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 110px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        .plan-card.culture { border-color: var(--culture-color); }
+        .plan-card.production { border-color: var(--production-color); }
+        .plan-card.utility { border-color: var(--utility-color); }
+        .plan-card.deed { border-color: var(--deed-color); }
+
+        .plan-card.unbuilt {
+            border-style: dashed;
+            opacity: 0.85;
+        }
+
+        .plan-card.unbuilt::after {
+            content: "UNBUILT";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-20deg);
+            background: rgba(0,0,0,0.7);
+            color: #e74c3c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+
+        .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .plan-title {
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .plan-badges {
+            display: flex;
+            gap: 4px;
+            font-size: 0.75rem;
+        }
+
+        .plan-cost { color: var(--mint-color); font-weight: bold; }
+        .plan-stars { color: var(--star-color); font-weight: bold; }
+
+        .plan-effect {
+            font-size: 0.7rem;
+            color: var(--subtext-color);
+            margin-top: 5px;
+            line-height: 1.2;
+        }
+
+        /* Controls */
+        #controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 10px 18px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        #pass-btn {
+            background-color: #e67e22;
+            color: white;
+            flex: 2;
+        }
+
+        #reset-btn {
+            background-color: #c0392b;
+            color: white;
+            flex: 1;
+        }
+
+        button:active { transform: translateY(1px); }
+        button:disabled { background-color: #555; cursor: not-allowed; opacity: 0.6; }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            background-color: var(--panel-bg);
+            color: var(--text-color);
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid var(--accent-color);
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.8);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--accent-color);
+        }
+
+        .option-group {
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .option-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--subtext-color);
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background-color: var(--accent-color);
+            color: #000;
+            font-size: 1rem;
+        }
+
+        /* Leaderboard */
+        #leaderboard-container {
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        #leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        #leaderboard-table th, #leaderboard-table td {
+            padding: 6px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #leaderboard-table th {
+            color: var(--accent-color);
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../" class="home-link">← Hub</a>
+        <h1>Mint Works</h1>
+    </header>
+
+    <div id="game-container">
+        <div id="stats-bar">
+            <div class="stat-box">
+                <div class="stat-label">Round</div>
+                <div class="stat-val" id="round-val">1</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Phase</div>
+                <div class="stat-val" id="phase-val">Development</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Mint Supply</div>
+                <div class="stat-val mint-badge" id="mint-supply-val">30</div>
+            </div>
+        </div>
+
+        <div id="players-summary">
+            <div class="player-card" id="p1-card">
+                <div class="player-name">
+                    <span>You</span>
+                    <span class="first-player-icon hidden" id="p1-first">1st</span>
+                </div>
+                <div class="player-resources">
+                    <span class="mint-badge">🍬 <span id="p1-mints">3</span></span>
+                    <span class="star-badge">⭐ <span id="p1-stars">0</span></span>
+                </div>
+            </div>
+            <div class="player-card" id="ai-card">
+                <div class="player-name">
+                    <span id="ai-name-label">AI Opponent</span>
+                    <span class="first-player-icon hidden" id="ai-first">1st</span>
+                </div>
+                <div class="player-resources">
+                    <span class="mint-badge">🍬 <span id="ai-mints">3</span></span>
+                    <span class="star-badge">⭐ <span id="ai-stars">0</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="message-box">
+            Welcome to Mint Works Solitaire. Select your actions below.
+        </div>
+
+        <div>
+            <div class="section-title">Locations</div>
+            <div class="locations-grid" id="locations-container">
+                <!-- Location cards injected dynamically -->
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title">
+                <span>Plan Supply (<span id="deck-count">19</span> in deck)</span>
+            </div>
+            <div class="plans-grid" id="plan-supply-container">
+                <!-- Plan supply cards injected dynamically -->
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title">Your Neighborhood</div>
+            <div class="plans-grid" id="player-neighborhood-container">
+                <!-- Player neighborhood plans -->
+            </div>
+        </div>
+
+        <div>
+            <div class="section-title"><span id="ai-neighborhood-title">AI Neighborhood</span></div>
+            <div class="plans-grid" id="ai-neighborhood-container">
+                <!-- AI neighborhood plans -->
+            </div>
+        </div>
+
+        <div id="controls">
+            <button id="pass-btn">Pass Turn</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+
+        <div id="leaderboard-container">
+            <div class="section-title" style="justify-content: center; margin-bottom: 8px;">Top Scores</div>
+            <table id="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>AI Opponent</th>
+                        <th>Score</th>
+                        <th>Result</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <tr><td colspan="5">No scores yet. Complete a game!</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Setup Modal -->
+    <div id="setup-modal" class="modal">
+        <div class="modal-content">
+            <h2>Game Setup</h2>
+            <p style="font-size: 0.85rem; color: var(--subtext-color);">Choose your AI opponent and game options to start.</p>
+
+            <div class="option-group">
+                <label for="ai-select">AI Opponent:</label>
+                <select id="ai-select">
+                    <option value="mort">Mort - The Hoarder (Starts with 3 Mints, prefers low cost plans)</option>
+                    <option value="justin">Justin - The Producer (Starts with 3 Mints, prefers high cost plans)</option>
+                    <option value="sonic">Sonic - The Fast Mover (Starts with 2 Mints, fast aggressive plays)</option>
+                    <option value="mel">Mel - The High Scorer (Starts with 4 Mints, prefers high star plans)</option>
+                </select>
+            </div>
+
+            <div class="option-group">
+                <label for="adv-select">Advanced Location:</label>
+                <select id="adv-select">
+                    <option value="none">None (Standard Core + Deed setup)</option>
+                    <option value="swap_meet">Swap Meet (2 Mints: Gain supply plan, replace with one from neighborhood)</option>
+                    <option value="recycler">Recycler (1 Mint: Recycle neighborhood plan for Mints)</option>
+                    <option value="crowdfunder">Crowdfunder (3 Mints: Gain 2 Mints; give opponent 1 Mint)</option>
+                </select>
+            </div>
+
+            <button class="modal-btn" id="start-game-btn">Start Game</button>
+        </div>
+    </div>
+
+    <!-- Selection Modal (For Location Target choices, e.g., Plan to Buy/Build) -->
+    <div id="select-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="select-modal-title">Select Card</h2>
+            <p id="select-modal-desc" style="font-size: 0.85rem; color: var(--subtext-color);"></p>
+            <div id="select-modal-options" style="display: flex; flex-direction: column; gap: 8px; margin: 15px 0;">
+                <!-- Target buttons injected dynamically -->
+            </div>
+            <button class="modal-btn" style="background-color: #7f8c8d; color: white;" id="select-modal-cancel">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="go-modal-title">Game Over</h2>
+            <p id="go-modal-msg" style="font-size: 1rem; line-height: 1.4;"></p>
+            <div id="go-modal-scores" style="font-size: 1.2rem; font-weight: bold; margin: 15px 0;"></div>
+            <button class="modal-btn" id="go-play-again-btn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // MASTER PLAN CARDS DEFINITIONS (21 Plans total)
+        const MASTER_PLANS = [
+            { id: 'workshop', name: 'Workshop', type: 'culture', cost: 1, stars: 1, effect: 'Upkeep: +1 Mint', upkeepMint: 1 },
+            { id: 'factory', name: 'Factory', type: 'production', cost: 3, stars: 2, effect: 'Upkeep: +2 Mints', upkeepMint: 2 },
+            { id: 'mine', name: 'Mine', type: 'production', cost: 2, stars: 1, effect: 'Upkeep: +1 Mint', upkeepMint: 1 },
+            { id: 'landfill', name: 'Landfill', type: 'utility', cost: 1, stars: 0, effect: 'Upkeep: +1 Mint', upkeepMint: 1 },
+            { id: 'assembler', name: 'Assembler', type: 'production', cost: 3, stars: 2, effect: 'Upkeep: +2 Mints', upkeepMint: 2 },
+            { id: 'corporate_hq', name: 'Corporate HQ', type: 'production', cost: 4, stars: 3, effect: 'Upkeep: +2 Mints', upkeepMint: 2 },
+            { id: 'co_op', name: 'Co-Op', type: 'production', cost: 2, stars: 1, effect: 'Upkeep: +1 Mint', upkeepMint: 1 },
+            { id: 'plaza', name: 'Plaza', type: 'culture', cost: 3, stars: 2, effect: '+1 Star per Culture plan built', bonusType: 'culture_stars' },
+            { id: 'museum', name: 'Museum', type: 'culture', cost: 2, stars: 1, effect: '+1 Star per Production plan built', bonusType: 'production_stars' },
+            { id: 'gallery', name: 'Gallery', type: 'culture', cost: 4, stars: 3, effect: '3 Stars' },
+            { id: 'gardens', name: 'Gardens', type: 'culture', cost: 3, stars: 3, effect: '3 Stars' },
+            { id: 'statue', name: 'Statue', type: 'culture', cost: 2, stars: 2, effect: '2 Stars' },
+            { id: 'obelisk', name: 'Obelisk', type: 'culture', cost: 4, stars: 4, effect: '4 Stars' },
+            { id: 'stadium', name: 'Stadium', type: 'culture', cost: 3, stars: 3, effect: '3 Stars' },
+            { id: 'monument', name: 'Monument', type: 'culture', cost: 3, stars: 3, effect: '3 Stars' },
+            { id: 'crane', name: 'Crane', type: 'utility', cost: 2, stars: 1, effect: 'Pay 1 less Mint at Builder (min 1)', builderDiscount: 1 },
+            { id: 'bridge', name: 'Bridge', type: 'utility', cost: 1, stars: 1, effect: 'Pay 1 less Mint at Builder (min 1)', builderDiscount: 1 },
+            { id: 'truck', name: 'Truck', type: 'utility', cost: 2, stars: 1, effect: 'Gain +1 Mint when visiting Producer', producerBonus: 1 },
+            { id: 'vault', name: 'Vault', type: 'utility', cost: 2, stars: 2, effect: 'Holds 2 Mints (+2 Stars if filled)', bonusType: 'vault_stars' },
+            { id: 'wholesaler_plan', name: 'Wholesaler Deed', type: 'deed', cost: 1, stars: 1, effect: 'Deed: Unlocks Wholesaler. Upkeep: Owner gains all Wholesaler mints', unlocksLocation: 'wholesaler' },
+            { id: 'lotto_plan', name: 'Lotto Deed', type: 'deed', cost: 3, stars: 2, effect: 'Deed: Unlocks Lotto. Upkeep: Owner gains 2 Mints if Lotto visited', unlocksLocation: 'lotto' }
+        ];
+
+        // LOCATION DEFINITIONS
+        const LOCATION_TEMPLATES = {
+            producer: { id: 'producer', name: 'Producer', type: 'core', baseCost: 1, slotsCount: 1, closed: false, effect: 'Gain 2 Mints' },
+            wholesaler: { id: 'wholesaler', name: 'Wholesaler', type: 'deed', baseCost: 1, slotsCount: 1, closed: true, effect: 'Gain 2 Mints' },
+            builder: { id: 'builder', name: 'Builder', type: 'core', baseCost: 2, slotsCount: 1, closed: false, effect: 'Build 1 unbuilt Plan' },
+            supplier: { id: 'supplier', name: 'Supplier', type: 'core', baseCost: 'Var', slotsCount: 1, closed: false, effect: 'Buy 1 Plan from Supply' },
+            leadership: { id: 'leadership', name: 'Leadership Council', type: 'core', baseCost: 1, slotsCount: 1, closed: false, effect: 'Gain 1 Mint & 1st Player token' },
+            lotto: { id: 'lotto', name: 'Lotto', type: 'deed', baseCost: 3, slotsCount: 1, closed: true, effect: 'Draw top Plan unbuilt' },
+            swap_meet: { id: 'swap_meet', name: 'Swap Meet', type: 'advanced', baseCost: 2, slotsCount: 1, closed: false, effect: 'Swap Supply plan with Neighborhood plan' },
+            recycler: { id: 'recycler', name: 'Recycler', type: 'advanced', baseCost: 1, slotsCount: 1, closed: false, effect: 'Recycle Neighborhood plan for Mints = Cost + Stars' },
+            crowdfunder: { id: 'crowdfunder', name: 'Crowdfunder', type: 'advanced', baseCost: 3, slotsCount: 1, closed: false, effect: 'Gain 2 Mints; opponent gains 1 Mint' }
+        };
+
+        // AI PERSONA PROFILES
+        const AI_PROFILES = {
+            mort: { name: 'Mort', title: 'The Hoarder', startingMints: 3, costPref: 'lowest', priority: ['supplier_lowest', 'builder_oldest', 'producer', 'wholesaler', 'leadership', 'lotto', 'pass'] },
+            justin: { name: 'Justin', title: 'The Producer', startingMints: 3, costPref: 'highest', priority: ['builder_oldest', 'supplier_highest', 'producer', 'wholesaler', 'leadership', 'lotto', 'pass'] },
+            sonic: { name: 'Sonic', title: 'The Fast Mover', startingMints: 2, costPref: 'lowest', priority: ['builder_oldest', 'supplier_lowest', 'producer', 'wholesaler', 'leadership', 'pass'] },
+            mel: { name: 'Mel', title: 'The High Scorer', startingMints: 4, costPref: 'high_stars', priority: ['supplier_stars', 'builder_highest_star', 'producer', 'wholesaler', 'leadership', 'lotto', 'pass'] }
+        };
+
+        // GAME STATE
+        let gameState = {
+            round: 1,
+            phase: 'development',
+            mintSupply: 30,
+            aiPersona: 'mort',
+            advLocation: 'none',
+            startPlayer: 'player',
+            currentTurn: 'player',
+            passed: { player: false, ai: false },
+            mintsOnSupplierThisRound: false,
+            wholesalerVisitedBy: null,
+            lottoVisitedBy: null,
+            locations: {},
+            deck: [],
+            supply: [],
+            player: { mints: 3, neighborhood: [], hasFirstPlayer: true },
+            ai: { mints: 3, neighborhood: [], hasFirstPlayer: false },
+            gameOver: false,
+            winner: null,
+            message: ""
+        };
+
+        function cloneState(state) {
+            return JSON.parse(JSON.stringify(state));
+        }
+
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function getPlanById(id) {
+            return MASTER_PLANS.find(p => p.id === id);
+        }
+
+        function getBuilderCost(entity) {
+            // Check if entity has Crane or Bridge built
+            const hasDiscount = entity.neighborhood.some(p => p.built && (p.planId === 'crane' || p.planId === 'bridge'));
+            return hasDiscount ? 1 : 2;
+        }
+
+        function getProducerMints(entity) {
+            const hasTruck = entity.neighborhood.some(p => p.built && p.planId === 'truck');
+            return hasTruck ? 3 : 2;
+        }
+
+        function calculateStars(entity) {
+            let stars = 0;
+            const builtPlans = entity.neighborhood.filter(p => p.built).map(p => getPlanById(p.planId));
+
+            builtPlans.forEach(p => {
+                stars += p.stars;
+            });
+
+            // Bonus Stars
+            if (builtPlans.some(p => p.id === 'plaza')) {
+                const cultureCount = builtPlans.filter(p => p.type === 'culture').length;
+                stars += cultureCount;
+            }
+            if (builtPlans.some(p => p.id === 'museum')) {
+                const prodCount = builtPlans.filter(p => p.type === 'production').length;
+                stars += prodCount;
+            }
+
+            return stars;
+        }
+
+        function initGame(aiKey = 'mort', advKey = 'none') {
+            const aiProfile = AI_PROFILES[aiKey] || AI_PROFILES.mort;
+
+            // Setup Deck
+            const shuffledDeck = shuffle(MASTER_PLANS.map(p => p.id));
+            const supply = [shuffledDeck.pop(), shuffledDeck.pop()];
+
+            // Locations Line setup
+            const locations = {
+                producer: { ...LOCATION_TEMPLATES.producer, slots: [null] },
+                wholesaler: { ...LOCATION_TEMPLATES.wholesaler, slots: [null] },
+                builder: { ...LOCATION_TEMPLATES.builder, slots: [null] },
+                supplier: { ...LOCATION_TEMPLATES.supplier, slots: [null] },
+                leadership: { ...LOCATION_TEMPLATES.leadership, slots: [null] },
+                lotto: { ...LOCATION_TEMPLATES.lotto, slots: [null] }
+            };
+
+            if (advKey !== 'none' && LOCATION_TEMPLATES[advKey]) {
+                locations[advKey] = { ...LOCATION_TEMPLATES[advKey], slots: [null] };
+            }
+
+            gameState = {
+                round: 1,
+                phase: 'development',
+                mintSupply: 30 - 3 - aiProfile.startingMints,
+                aiPersona: aiKey,
+                advLocation: advKey,
+                startPlayer: 'player',
+                currentTurn: 'player',
+                passed: { player: false, ai: false },
+                mintsOnSupplierThisRound: false,
+                wholesalerVisitedBy: null,
+                lottoVisitedBy: null,
+                locations: locations,
+                deck: shuffledDeck,
+                supply: supply,
+                player: { mints: 3, neighborhood: [], hasFirstPlayer: true },
+                ai: { mints: aiProfile.startingMints, neighborhood: [], hasFirstPlayer: false },
+                gameOver: false,
+                winner: null,
+                message: `Game started against ${aiProfile.name}. Choose an action on your turn.`
+            };
+
+            updateUI();
+            saveStateToUrl();
+            renderLeaderboard();
+        }
+
+        // TURN & PHASE PROGRESSION
+        function passTurn(who) {
+            gameState.passed[who] = true;
+            const other = who === 'player' ? 'ai' : 'player';
+
+            setMessage(`${who === 'player' ? 'You' : AI_PROFILES[gameState.aiPersona].name} passed.`);
+
+            if (gameState.passed.player && gameState.passed.ai) {
+                // Both passed -> Proceed to Upkeep Phase
+                setTimeout(runUpkeepPhase, 600);
+            } else {
+                gameState.currentTurn = other;
+                updateUI();
+                saveStateToUrl();
+                if (gameState.currentTurn === 'ai' && !gameState.passed.ai) {
+                    setTimeout(executeAiTurn, 800);
+                }
+            }
+        }
+
+        function nextTurn() {
+            if (gameState.gameOver) return;
+
+            const current = gameState.currentTurn;
+            const other = current === 'player' ? 'ai' : 'player';
+
+            // Reset passed status if other player didn't pass, or keep passed if set
+            if (!gameState.passed[other]) {
+                gameState.currentTurn = other;
+            } else if (!gameState.passed[current]) {
+                gameState.currentTurn = current;
+            } else {
+                runUpkeepPhase();
+                return;
+            }
+
+            updateUI();
+            saveStateToUrl();
+
+            if (gameState.currentTurn === 'ai' && !gameState.passed.ai) {
+                setTimeout(executeAiTurn, 800);
+            }
+        }
+
+        function checkWinConditions() {
+            const playerStars = calculateStars(gameState.player);
+            const aiStars = calculateStars(gameState.ai);
+
+            const isDeckEmpty = gameState.deck.length === 0 && gameState.supply.length === 0;
+
+            if (playerStars >= 7 || aiStars >= 7 || isDeckEmpty) {
+                endGame(playerStars, aiStars);
+                return true;
+            }
+            return false;
+        }
+
+        function runUpkeepPhase() {
+            gameState.phase = 'upkeep';
+            setMessage("Upkeep Phase: Resolving upkeep effects and refreshing supply...");
+
+            // 1. Check Win Condition
+            if (checkWinConditions()) return;
+
+            // 2. Check Supplier Refresh (If no mints placed on Supplier this round, refresh supply)
+            if (!gameState.mintsOnSupplierThisRound && gameState.supply.length > 0) {
+                gameState.deck.unshift(...gameState.supply); // Put supply on bottom of deck
+                gameState.supply = [];
+                while (gameState.supply.length < 2 && gameState.deck.length > 0) {
+                    gameState.supply.push(gameState.deck.pop());
+                }
+            }
+            gameState.mintsOnSupplierThisRound = false;
+
+            // 3. Resolve Upkeep Effects for Player & AI
+            ['player', 'ai'].forEach(who => {
+                const entity = gameState[who];
+                entity.neighborhood.filter(p => p.built).forEach(p => {
+                    const plan = getPlanById(p.planId);
+                    if (plan.upkeepMint) {
+                        const mintsGained = Math.min(gameState.mintSupply, plan.upkeepMint);
+                        entity.mints += mintsGained;
+                        gameState.mintSupply -= mintsGained;
+                    }
+                });
+
+                // Wholesaler deed upkeep: owner gains mints placed on Wholesaler
+                const hasWholesalerDeed = entity.neighborhood.some(p => p.built && p.planId === 'wholesaler_plan');
+                if (hasWholesalerDeed && gameState.wholesalerVisitedBy) {
+                    entity.mints += 1; // Wholesaler location cost mint
+                }
+
+                // Lotto deed upkeep: owner gains 2 mints if Lotto was visited
+                const hasLottoDeed = entity.neighborhood.some(p => p.built && p.planId === 'lotto_plan');
+                if (hasLottoDeed && gameState.lottoVisitedBy) {
+                    const gained = Math.min(gameState.mintSupply, 2);
+                    entity.mints += gained;
+                    gameState.mintSupply -= gained;
+                }
+            });
+
+            gameState.wholesalerVisitedBy = null;
+            gameState.lottoVisitedBy = null;
+
+            // 4. Return Mints from Locations to Supply & Reset Location slots
+            Object.keys(gameState.locations).forEach(locKey => {
+                const loc = gameState.locations[locKey];
+                loc.slots = loc.slots.map(() => null);
+            });
+
+            // 5. Income: Each player gains +1 Mint
+            ['player', 'ai'].forEach(who => {
+                if (gameState.mintSupply > 0) {
+                    gameState[who].mints += 1;
+                    gameState.mintSupply -= 1;
+                }
+            });
+
+            // 6. Round reset
+            gameState.round += 1;
+            gameState.passed = { player: false, ai: false };
+            gameState.phase = 'development';
+            gameState.currentTurn = gameState.player.hasFirstPlayer ? 'player' : 'ai';
+
+            updateUI();
+            saveStateToUrl();
+
+            setMessage(`Round ${gameState.round} started. ${gameState.currentTurn === 'player' ? 'Your' : AI_PROFILES[gameState.aiPersona].name + "'s"} turn.`);
+
+            if (gameState.currentTurn === 'ai') {
+                setTimeout(executeAiTurn, 800);
+            }
+        }
+
+        function endGame(pStars, aStars) {
+            gameState.gameOver = true;
+
+            const pPlansCount = gameState.player.neighborhood.length;
+            const aPlansCount = gameState.ai.neighborhood.length;
+
+            const pMints = gameState.player.mints;
+            const aMints = gameState.ai.mints;
+
+            let winner = 'player';
+            let reason = '';
+
+            if (pStars > aStars) {
+                winner = 'player';
+                reason = `You won with ${pStars} Stars to ${aStars} Stars!`;
+            } else if (aStars > pStars) {
+                winner = 'ai';
+                reason = `${AI_PROFILES[gameState.aiPersona].name} won with ${aStars} Stars to ${pStars} Stars!`;
+            } else {
+                // Tie-breaker 1: Fewest total plans
+                if (pPlansCount < aPlansCount) {
+                    winner = 'player';
+                    reason = `Tie on Stars (${pStars})! You won on tie-breaker (smaller neighborhood: ${pPlansCount} vs ${aPlansCount} plans)!`;
+                } else if (aPlansCount < pPlansCount) {
+                    winner = 'ai';
+                    reason = `Tie on Stars (${aStars})! ${AI_PROFILES[gameState.aiPersona].name} won on tie-breaker (smaller neighborhood: ${aPlansCount} vs ${pPlansCount} plans)!`;
+                } else {
+                    // Tie-breaker 2: Most remaining mints
+                    if (pMints > aMints) {
+                        winner = 'player';
+                        reason = `Tie on Stars (${pStars}) & Plans (${pPlansCount})! You won on tie-breaker (more Mints: ${pMints} vs ${aMints})!`;
+                    } else if (aMints > pMints) {
+                        winner = 'ai';
+                        reason = `Tie on Stars (${aStars}) & Plans (${aPlansCount})! ${AI_PROFILES[gameState.aiPersona].name} won on tie-breaker (more Mints: ${aMints} vs ${pMints})!`;
+                    } else {
+                        winner = 'draw';
+                        reason = `It's a complete tie! Shared victory (${pStars} Stars)!`;
+                    }
+                }
+            }
+
+            gameState.winner = winner;
+            saveScore(winner, pStars, aStars);
+
+            const modalTitle = document.getElementById('go-modal-title');
+            const modalMsg = document.getElementById('go-modal-msg');
+            const modalScores = document.getElementById('go-modal-scores');
+
+            if (winner === 'player') {
+                modalTitle.textContent = "VICTORY!";
+                modalTitle.style.color = "var(--mint-color)";
+            } else if (winner === 'ai') {
+                modalTitle.textContent = "DEFEAT";
+                modalTitle.style.color = "var(--culture-color)";
+            } else {
+                modalTitle.textContent = "DRAW";
+                modalTitle.style.color = "var(--star-color)";
+            }
+
+            modalMsg.textContent = reason;
+            modalScores.textContent = `Your Stars: ${pStars} | ${AI_PROFILES[gameState.aiPersona].name}'s Stars: ${aStars}`;
+
+            document.getElementById('game-over-modal').style.display = 'flex';
+            updateUI();
+        }
+
+        // PLAYER ACTION EXECUTION HANDLERS
+        function executePlayerAction(locKey, extraData = {}) {
+            if (gameState.currentTurn !== 'player' || gameState.gameOver) return;
+
+            const loc = gameState.locations[locKey];
+            if (!loc || loc.closed || loc.slots[0] !== null) return;
+
+            const entity = gameState.player;
+
+            if (locKey === 'producer') {
+                if (entity.mints < 1) return;
+                entity.mints -= 1;
+                loc.slots[0] = 'player';
+
+                const gained = getProducerMints(entity);
+                entity.mints += gained;
+                gameState.mintSupply -= Math.min(gameState.mintSupply, gained - 1); // net gained - paid
+
+                setMessage(`You placed 1 Mint at Producer and gained ${gained} Mints.`);
+                nextTurn();
+            } else if (locKey === 'wholesaler') {
+                if (entity.mints < 1) return;
+                entity.mints -= 1;
+                loc.slots[0] = 'player';
+                gameState.wholesalerVisitedBy = 'player';
+
+                entity.mints += 2;
+                setMessage("You placed 1 Mint at Wholesaler and gained 2 Mints.");
+                nextTurn();
+            } else if (locKey === 'builder') {
+                const cost = getBuilderCost(entity);
+                if (entity.mints < cost) return;
+
+                const unbuiltPlans = entity.neighborhood.filter(p => !p.built);
+                if (unbuiltPlans.length === 0) {
+                    setMessage("You have no unbuilt plans in your neighborhood to build!");
+                    return;
+                }
+
+                showSelectModal("Select Plan to Build", "Choose an unbuilt plan from your neighborhood to build:", unbuiltPlans.map(p => {
+                    const plan = getPlanById(p.planId);
+                    return {
+                        label: `${plan.name} (${plan.stars} ⭐, ${plan.effect})`,
+                        action: () => {
+                            entity.mints -= cost;
+                            loc.slots[0] = 'player';
+                            p.built = true;
+
+                            // If plan unlocks deed location, open location
+                            if (plan.unlocksLocation && gameState.locations[plan.unlocksLocation]) {
+                                gameState.locations[plan.unlocksLocation].closed = false;
+                            }
+
+                            closeModal('select-modal');
+                            setMessage(`You built ${plan.name}!`);
+                            nextTurn();
+                        }
+                    };
+                }));
+            } else if (locKey === 'supplier') {
+                if (gameState.supply.length === 0) {
+                    setMessage("Plan Supply is empty!");
+                    return;
+                }
+
+                const affordablePlans = gameState.supply
+                    .map((planId, idx) => ({ planId, idx, plan: getPlanById(planId) }))
+                    .filter(item => entity.mints >= item.plan.cost);
+
+                if (affordablePlans.length === 0) {
+                    setMessage("You don't have enough Mints for any plan in Supply!");
+                    return;
+                }
+
+                showSelectModal("Select Plan to Buy", "Choose a plan from Supply to buy into your neighborhood:", affordablePlans.map(item => ({
+                    label: `${item.plan.name} (Cost: ${item.plan.cost} 🍬, ${item.plan.stars} ⭐)`,
+                    action: () => {
+                        entity.mints -= item.plan.cost;
+                        loc.slots[0] = 'player';
+                        gameState.mintsOnSupplierThisRound = true;
+
+                        entity.neighborhood.push({ planId: item.plan.id, built: false });
+                        gameState.supply.splice(item.idx, 1);
+
+                        // Refill supply immediately if deck not empty
+                        if (gameState.deck.length > 0) {
+                            gameState.supply.push(gameState.deck.pop());
+                        }
+
+                        closeModal('select-modal');
+                        setMessage(`You bought ${item.plan.name} unbuilt!`);
+                        nextTurn();
+                    }
+                })));
+            } else if (locKey === 'leadership') {
+                if (entity.mints < 1) return;
+                entity.mints -= 1;
+                loc.slots[0] = 'player';
+
+                entity.mints += 1;
+                entity.hasFirstPlayer = true;
+                gameState.ai.hasFirstPlayer = false;
+
+                setMessage("You visited Leadership Council: gained 1 Mint and 1st Player token!");
+                nextTurn();
+            } else if (locKey === 'lotto') {
+                if (entity.mints < 3) return;
+                if (gameState.deck.length === 0) {
+                    setMessage("Plan Deck is empty!");
+                    return;
+                }
+
+                entity.mints -= 3;
+                loc.slots[0] = 'player';
+                gameState.lottoVisitedBy = 'player';
+
+                const drawnPlanId = gameState.deck.pop();
+                const drawnPlan = getPlanById(drawnPlanId);
+                entity.neighborhood.push({ planId: drawnPlanId, built: false });
+
+                setMessage(`You placed 3 Mints at Lotto and drew ${drawnPlan.name} unbuilt!`);
+                nextTurn();
+            } else if (locKey === 'swap_meet') {
+                if (entity.mints < 2) return;
+                if (gameState.supply.length === 0) return;
+                if (entity.neighborhood.length === 0) {
+                    setMessage("You need at least 1 plan in your neighborhood to swap!");
+                    return;
+                }
+
+                // Step 1: Pick supply plan to gain
+                showSelectModal("Swap Meet: Gain Supply Plan", "Choose a plan from Supply to gain:", gameState.supply.map((planId, sIdx) => {
+                    const sPlan = getPlanById(planId);
+                    return {
+                        label: `Gain ${sPlan.name}`,
+                        action: () => {
+                            // Step 2: Pick neighborhood plan to give back
+                            showSelectModal("Swap Meet: Replace Plan", "Choose a plan from your neighborhood to put into Supply:", entity.neighborhood.map((pObj, nIdx) => {
+                                const nPlan = getPlanById(pObj.planId);
+                                return {
+                                    label: `Give ${nPlan.name} (${pObj.built ? 'Built' : 'Unbuilt'})`,
+                                    action: () => {
+                                        entity.mints -= 2;
+                                        loc.slots[0] = 'player';
+
+                                        // Swap
+                                        const gainedId = gameState.supply[sIdx];
+                                        const givenObj = entity.neighborhood.splice(nIdx, 1)[0];
+
+                                        entity.neighborhood.push({ planId: gainedId, built: false });
+                                        gameState.supply[sIdx] = givenObj.planId;
+
+                                        closeModal('select-modal');
+                                        setMessage(`Swap Meet: Gained ${getPlanById(gainedId).name} and put ${nPlan.name} in Supply.`);
+                                        nextTurn();
+                                    }
+                                };
+                            }));
+                        }
+                    };
+                }));
+            } else if (locKey === 'recycler') {
+                if (entity.mints < 1) return;
+                if (entity.neighborhood.length === 0) {
+                    setMessage("You have no plans in your neighborhood to recycle!");
+                    return;
+                }
+
+                showSelectModal("Recycler: Recycle Plan", "Choose a plan to recycle to bottom of deck for Mints:", entity.neighborhood.map((pObj, nIdx) => {
+                    const plan = getPlanById(pObj.planId);
+                    const reward = plan.cost + plan.stars;
+                    return {
+                        label: `Recycle ${plan.name} (+${reward} Mints)`,
+                        action: () => {
+                            entity.mints -= 1;
+                            loc.slots[0] = 'player';
+
+                            const removed = entity.neighborhood.splice(nIdx, 1)[0];
+                            gameState.deck.unshift(removed.planId); // Put at bottom of deck
+
+                            entity.mints += reward;
+                            closeModal('select-modal');
+                            setMessage(`Recycled ${plan.name} and gained ${reward} Mints!`);
+                            nextTurn();
+                        }
+                    };
+                }));
+            } else if (locKey === 'crowdfunder') {
+                if (entity.mints < 3) return;
+                entity.mints -= 3;
+                loc.slots[0] = 'player';
+
+                entity.mints += 2;
+                gameState.ai.mints += 1;
+
+                setMessage("You visited Crowdfunder: Gained 2 Mints (+1 Mint to AI).");
+                nextTurn();
+            }
+        }
+
+        function showSelectModal(title, desc, options) {
+            document.getElementById('select-modal-title').textContent = title;
+            document.getElementById('select-modal-desc').textContent = desc;
+            const container = document.getElementById('select-modal-options');
+            container.innerHTML = '';
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'action-btn';
+                btn.textContent = opt.label;
+                btn.onclick = opt.action;
+                container.appendChild(btn);
+            });
+
+            document.getElementById('select-modal').style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // UI RENDERING & DOM UPDATES
+        function updateUI() {
+            // Stats bar
+            document.getElementById('round-val').textContent = gameState.round;
+            document.getElementById('phase-val').textContent = gameState.phase === 'development' ? 'Development' : 'Upkeep';
+            document.getElementById('mint-supply-val').textContent = gameState.mintSupply;
+
+            // Player resources & stars
+            const pStars = calculateStars(gameState.player);
+            const aStars = calculateStars(gameState.ai);
+
+            document.getElementById('p1-mints').textContent = gameState.player.mints;
+            document.getElementById('p1-stars').textContent = pStars;
+
+            document.getElementById('ai-mints').textContent = gameState.ai.mints;
+            document.getElementById('ai-stars').textContent = aStars;
+
+            // AI Profile Label
+            const aiProfile = AI_PROFILES[gameState.aiPersona] || AI_PROFILES.mort;
+            document.getElementById('ai-name-label').textContent = `${aiProfile.name} (${aiProfile.title})`;
+            document.getElementById('ai-neighborhood-title').textContent = `${aiProfile.name}'s Neighborhood`;
+
+            // Turn Highlights & First Player Badges
+            const pCard = document.getElementById('p1-card');
+            const aCard = document.getElementById('ai-card');
+
+            if (gameState.currentTurn === 'player') {
+                pCard.classList.add('active-turn');
+                aCard.classList.remove('active-turn');
+            } else {
+                aCard.classList.add('active-turn');
+                pCard.classList.remove('active-turn');
+            }
+
+            if (gameState.player.hasFirstPlayer) {
+                document.getElementById('p1-first').classList.remove('hidden');
+                document.getElementById('ai-first').classList.add('hidden');
+            } else {
+                document.getElementById('ai-first').classList.remove('hidden');
+                document.getElementById('p1-first').classList.add('hidden');
+            }
+
+            // Message box
+            document.getElementById('message-box').textContent = gameState.message;
+
+            // Render Locations
+            const locsContainer = document.getElementById('locations-container');
+            locsContainer.innerHTML = '';
+
+            Object.keys(gameState.locations).forEach(locKey => {
+                const loc = gameState.locations[locKey];
+                const card = document.createElement('div');
+                card.className = `location-card ${loc.closed ? 'closed' : ''}`;
+
+                let costText = `${loc.baseCost} 🍬`;
+                if (locKey === 'supplier') costText = 'Var 🍬';
+                if (locKey === 'builder') costText = `${getBuilderCost(gameState.player)} 🍬`;
+
+                let slotsHtml = loc.slots.map(s => {
+                    if (s === 'player') return `<div class="slot occupied">You</div>`;
+                    if (s === 'ai') return `<div class="slot occupied">${aiProfile.name}</div>`;
+                    return `<div class="slot">Empty</div>`;
+                }).join('');
+
+                const isPlayerTurn = gameState.currentTurn === 'player' && !gameState.gameOver && !gameState.passed.player;
+                const isOccupied = loc.slots[0] !== null;
+
+                let canAfford = false;
+                if (isPlayerTurn && !isOccupied && !loc.closed) {
+                    if (locKey === 'producer' || locKey === 'wholesaler' || locKey === 'leadership' || locKey === 'recycler') {
+                        canAfford = gameState.player.mints >= 1;
+                    } else if (locKey === 'builder') {
+                        canAfford = gameState.player.mints >= getBuilderCost(gameState.player) && gameState.player.neighborhood.some(p => !p.built);
+                    } else if (locKey === 'supplier') {
+                        canAfford = gameState.supply.some(planId => gameState.player.mints >= getPlanById(planId).cost);
+                    } else if (locKey === 'lotto' || locKey === 'crowdfunder') {
+                        canAfford = gameState.player.mints >= 3;
+                    } else if (locKey === 'swap_meet') {
+                        canAfford = gameState.player.mints >= 2 && gameState.player.neighborhood.length > 0;
+                    }
+                }
+
+                card.innerHTML = `
+                    <div class="location-header">
+                        <span class="location-name">${loc.name}</span>
+                        <span class="location-type">${loc.type}</span>
+                    </div>
+                    <div class="location-cost">Cost: ${costText}</div>
+                    <div class="location-effect">${loc.effect}</div>
+                    <div class="location-slots">${slotsHtml}</div>
+                    <button class="action-btn" ${!canAfford ? 'disabled' : ''} onclick="executePlayerAction('${locKey}')">
+                        ${loc.closed ? 'Closed' : (isOccupied ? 'Occupied' : 'Visit')}
+                    </button>
+                `;
+
+                locsContainer.appendChild(card);
+            });
+
+            // Render Plan Supply
+            document.getElementById('deck-count').textContent = gameState.deck.length;
+            const supplyContainer = document.getElementById('plan-supply-container');
+            supplyContainer.innerHTML = '';
+
+            gameState.supply.forEach(planId => {
+                const plan = getPlanById(planId);
+                supplyContainer.appendChild(createPlanCardElement(plan, true));
+            });
+
+            // Render Player Neighborhood
+            const pNeighContainer = document.getElementById('player-neighborhood-container');
+            pNeighContainer.innerHTML = '';
+            if (gameState.player.neighborhood.length === 0) {
+                pNeighContainer.innerHTML = '<div style="font-size: 0.85rem; color: var(--subtext-color); grid-column: 1/-1;">No plans acquired yet.</div>';
+            } else {
+                gameState.player.neighborhood.forEach(pObj => {
+                    const plan = getPlanById(pObj.planId);
+                    pNeighContainer.appendChild(createPlanCardElement(plan, pObj.built));
+                });
+            }
+
+            // Render AI Neighborhood
+            const aNeighContainer = document.getElementById('ai-neighborhood-container');
+            aNeighContainer.innerHTML = '';
+            if (gameState.ai.neighborhood.length === 0) {
+                aNeighContainer.innerHTML = '<div style="font-size: 0.85rem; color: var(--subtext-color); grid-column: 1/-1;">No plans acquired yet.</div>';
+            } else {
+                gameState.ai.neighborhood.forEach(pObj => {
+                    const plan = getPlanById(pObj.planId);
+                    aNeighContainer.appendChild(createPlanCardElement(plan, pObj.built));
+                });
+            }
+
+            // Controls
+            const passBtn = document.getElementById('pass-btn');
+            passBtn.disabled = gameState.currentTurn !== 'player' || gameState.gameOver || gameState.passed.player;
+        }
+
+        function createPlanCardElement(plan, isBuilt) {
+            const card = document.createElement('div');
+            card.className = `plan-card ${plan.type} ${!isBuilt ? 'unbuilt' : ''}`;
+
+            card.innerHTML = `
+                <div class="plan-header">
+                    <span class="plan-title">${plan.name}</span>
+                    <div class="plan-badges">
+                        <span class="plan-cost">${plan.cost}🍬</span>
+                        <span class="plan-stars">${plan.stars}⭐</span>
+                    </div>
+                </div>
+                <div class="plan-effect">${plan.effect}</div>
+            `;
+            return card;
+        }
+
+        function setMessage(msg) {
+            gameState.message = msg;
+            document.getElementById('message-box').textContent = msg;
+        }
+
+        // STATE PERSISTENCE & LEADERBOARD
+        function saveStateToUrl() {
+            try {
+                const serialized = btoa(JSON.stringify(gameState));
+                history.replaceState(null, "", "#" + serialized);
+            } catch (e) {
+                console.error("Failed to save state to URL", e);
+            }
+        }
+
+        function loadStateFromUrl() {
+            const hash = window.location.hash.substring(1);
+            if (!hash) return false;
+            try {
+                const loaded = JSON.parse(atob(hash));
+                if (loaded && loaded.locations && loaded.player && loaded.ai) {
+                    gameState = loaded;
+                    return true;
+                }
+            } catch (e) {
+                console.error("Failed to parse URL hash state", e);
+            }
+            return false;
+        }
+
+        function saveScore(winnerResult, pStars, aStars) {
+            const scores = JSON.parse(localStorage.getItem('mintworks-leaderboard') || '[]');
+            const entry = {
+                ai: AI_PROFILES[gameState.aiPersona].name,
+                score: pStars,
+                result: winnerResult === 'player' ? 'Win' : (winnerResult === 'ai' ? 'Loss' : 'Draw'),
+                date: new Date().toLocaleDateString()
+            };
+            scores.push(entry);
+            scores.sort((a, b) => b.score - a.score);
+            const top10 = scores.slice(0, 10);
+            localStorage.setItem('mintworks-leaderboard', JSON.stringify(top10));
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const scores = JSON.parse(localStorage.getItem('mintworks-leaderboard') || '[]');
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+
+            if (scores.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">No scores yet. Complete a game!</td></tr>';
+                return;
+            }
+
+            scores.forEach((entry, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td>${entry.ai}</td>
+                    <td>${entry.score} ⭐</td>
+                    <td style="font-weight:bold; color: ${entry.result === 'Win' ? 'var(--mint-color)' : (entry.result === 'Loss' ? 'var(--culture-color)' : 'var(--star-color)')}">${entry.result}</td>
+                    <td>${entry.date}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // EVENT BINDINGS & INIT
+        document.getElementById('pass-btn').onclick = () => passTurn('player');
+        document.getElementById('reset-btn').onclick = () => {
+            history.replaceState(null, "", window.location.pathname);
+            document.getElementById('setup-modal').style.display = 'flex';
+        };
+        document.getElementById('start-game-btn').onclick = () => {
+            const aiSel = document.getElementById('ai-select').value;
+            const advSel = document.getElementById('adv-select').value;
+            closeModal('setup-modal');
+            initGame(aiSel, advSel);
+        };
+        document.getElementById('go-play-again-btn').onclick = () => {
+            closeModal('game-over-modal');
+            history.replaceState(null, "", window.location.pathname);
+            document.getElementById('setup-modal').style.display = 'flex';
+        };
+        document.getElementById('select-modal-cancel').onclick = () => closeModal('select-modal');
+
+        window.onload = () => {
+            if (loadStateFromUrl()) {
+                document.getElementById('setup-modal').style.display = 'none';
+                updateUI();
+                renderLeaderboard();
+            } else {
+                document.getElementById('setup-modal').style.display = 'flex';
+                renderLeaderboard();
+            }
+        };
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js')
+                    .then(reg => console.log('Service Worker registered', reg))
+                    .catch(err => console.log('Service Worker registration failed', err));
+            });
+        }
+
+        // AI ENGINE
+        function executeAiTurn() {
+            if (gameState.currentTurn !== 'ai' || gameState.gameOver || gameState.passed.ai) return;
+
+            const ai = gameState.ai;
+            const personaKey = gameState.aiPersona;
+            const profile = AI_PROFILES[personaKey] || AI_PROFILES.mort;
+
+            const locs = gameState.locations;
+
+            // Helper checks
+            const isAvailable = (key) => locs[key] && !locs[key].closed && locs[key].slots[0] === null;
+
+            let actionTaken = false;
+
+            if (personaKey === 'mort') {
+                // MORT LOGIC: Lowest cost supplier -> Build oldest -> Producer -> Wholesaler -> Leadership -> Lotto
+                actionTaken = aiTryBuySupplier(ai, 'lowest') ||
+                              aiTryBuild(ai, 'oldest') ||
+                              aiTryProducer(ai) ||
+                              aiTryWholesaler(ai) ||
+                              aiTryLeadership(ai) ||
+                              aiTryLotto(ai);
+            } else if (personaKey === 'justin') {
+                // JUSTIN LOGIC: Build oldest -> Highest cost supplier -> Producer -> Wholesaler -> Leadership -> Lotto
+                actionTaken = aiTryBuild(ai, 'oldest') ||
+                              aiTryBuySupplier(ai, 'highest') ||
+                              aiTryProducer(ai) ||
+                              aiTryWholesaler(ai) ||
+                              aiTryLeadership(ai) ||
+                              aiTryLotto(ai);
+            } else if (personaKey === 'sonic') {
+                // SONIC LOGIC: Build oldest -> Lowest cost supplier -> Producer -> Wholesaler -> Leadership
+                actionTaken = aiTryBuild(ai, 'oldest') ||
+                              aiTryBuySupplier(ai, 'lowest') ||
+                              aiTryProducer(ai) ||
+                              aiTryWholesaler(ai) ||
+                              aiTryLeadership(ai);
+            } else if (personaKey === 'mel') {
+                // MEL LOGIC: Highest star supplier -> Build highest star -> Producer -> Wholesaler -> Leadership -> Lotto
+                actionTaken = aiTryBuySupplier(ai, 'stars') ||
+                              aiTryBuild(ai, 'highest_star') ||
+                              aiTryProducer(ai) ||
+                              aiTryWholesaler(ai) ||
+                              aiTryLeadership(ai) ||
+                              aiTryLotto(ai);
+            }
+
+            // Advanced Location AI logic fallback if not handled
+            if (!actionTaken && isAvailable(gameState.advLocation)) {
+                actionTaken = aiTryAdvancedLocation(ai, gameState.advLocation);
+            }
+
+            if (!actionTaken) {
+                passTurn('ai');
+            }
+        }
+
+        function aiTryBuySupplier(ai, preference) {
+            const loc = gameState.locations.supplier;
+            if (!loc || loc.closed || loc.slots[0] !== null || gameState.supply.length === 0) return false;
+
+            const affordable = gameState.supply
+                .map((planId, idx) => ({ planId, idx, plan: getPlanById(planId) }))
+                .filter(item => ai.mints >= item.plan.cost);
+
+            if (affordable.length === 0) return false;
+
+            let chosen = null;
+
+            if (preference === 'lowest') {
+                // Sort by cost asc, then by idx asc (closest to deck)
+                affordable.sort((a, b) => a.plan.cost - b.plan.cost || a.idx - b.idx);
+                chosen = affordable[0];
+            } else if (preference === 'highest') {
+                // Sort by cost desc, then by idx asc
+                affordable.sort((a, b) => b.plan.cost - a.plan.cost || a.idx - b.idx);
+                chosen = affordable[0];
+            } else if (preference === 'stars') {
+                // Sort by stars desc, then cost desc, then idx asc
+                affordable.sort((a, b) => b.plan.stars - a.plan.stars || b.plan.cost - a.plan.cost || a.idx - b.idx);
+                chosen = affordable[0];
+            }
+
+            if (!chosen) return false;
+
+            // Execute Buy
+            ai.mints -= chosen.plan.cost;
+            loc.slots[0] = 'ai';
+            gameState.mintsOnSupplierThisRound = true;
+
+            ai.neighborhood.push({ planId: chosen.plan.id, built: false });
+            gameState.supply.splice(chosen.idx, 1);
+
+            if (gameState.deck.length > 0) {
+                gameState.supply.push(gameState.deck.pop());
+            }
+
+            setMessage(`${AI_PROFILES[gameState.aiPersona].name} bought ${chosen.plan.name} unbuilt.`);
+            nextTurn();
+            return true;
+        }
+
+        function aiTryBuild(ai, strategy) {
+            const loc = gameState.locations.builder;
+            if (!loc || loc.closed || loc.slots[0] !== null) return false;
+
+            const cost = getBuilderCost(ai);
+            if (ai.mints < cost) return false;
+
+            const unbuilt = ai.neighborhood.filter(p => !p.built);
+            if (unbuilt.length === 0) return false;
+
+            let target = null;
+
+            if (strategy === 'oldest') {
+                target = unbuilt[0];
+            } else if (strategy === 'highest_star') {
+                const sorted = [...unbuilt].sort((a, b) => getPlanById(b.planId).stars - getPlanById(a.planId).stars);
+                target = sorted[0];
+            }
+
+            if (!target) return false;
+
+            ai.mints -= cost;
+            loc.slots[0] = 'ai';
+            target.built = true;
+
+            const plan = getPlanById(target.planId);
+            if (plan.unlocksLocation && gameState.locations[plan.unlocksLocation]) {
+                gameState.locations[plan.unlocksLocation].closed = false;
+            }
+
+            setMessage(`${AI_PROFILES[gameState.aiPersona].name} built ${plan.name}!`);
+            nextTurn();
+            return true;
+        }
+
+        function aiTryProducer(ai) {
+            const loc = gameState.locations.producer;
+            if (!loc || loc.closed || loc.slots[0] !== null || ai.mints < 1) return false;
+
+            ai.mints -= 1;
+            loc.slots[0] = 'ai';
+
+            const gained = getProducerMints(ai);
+            ai.mints += gained;
+            gameState.mintSupply -= Math.min(gameState.mintSupply, gained - 1);
+
+            setMessage(`${AI_PROFILES[gameState.aiPersona].name} visited Producer (+${gained} Mints).`);
+            nextTurn();
+            return true;
+        }
+
+        function aiTryWholesaler(ai) {
+            const loc = gameState.locations.wholesaler;
+            if (!loc || loc.closed || loc.slots[0] !== null || ai.mints < 1) return false;
+
+            ai.mints -= 1;
+            loc.slots[0] = 'ai';
+            gameState.wholesalerVisitedBy = 'ai';
+
+            ai.mints += 2;
+            setMessage(`${AI_PROFILES[gameState.aiPersona].name} visited Wholesaler (+2 Mints).`);
+            nextTurn();
+            return true;
+        }
+
+        function aiTryLeadership(ai) {
+            const loc = gameState.locations.leadership;
+            if (!loc || loc.closed || loc.slots[0] !== null || ai.mints < 1) return false;
+            if (ai.hasFirstPlayer) return false; // Don't visit if already has 1st player token
+
+            ai.mints -= 1;
+            loc.slots[0] = 'ai';
+
+            ai.mints += 1;
+            ai.hasFirstPlayer = true;
+            gameState.player.hasFirstPlayer = false;
+
+            setMessage(`${AI_PROFILES[gameState.aiPersona].name} visited Leadership Council (took 1st Player token).`);
+            nextTurn();
+            return true;
+        }
+
+        function aiTryLotto(ai) {
+            const loc = gameState.locations.lotto;
+            if (!loc || loc.closed || loc.slots[0] !== null || ai.mints < 3 || gameState.deck.length === 0) return false;
+
+            ai.mints -= 3;
+            loc.slots[0] = 'ai';
+            gameState.lottoVisitedBy = 'ai';
+
+            const drawnId = gameState.deck.pop();
+            const plan = getPlanById(drawnId);
+            ai.neighborhood.push({ planId: drawnId, built: false });
+
+            setMessage(`${AI_PROFILES[gameState.aiPersona].name} visited Lotto and drew a plan.`);
+            nextTurn();
+            return true;
+        }
+
+        function aiTryAdvancedLocation(ai, locKey) {
+            const loc = gameState.locations[locKey];
+            if (!loc || loc.closed || loc.slots[0] !== null) return false;
+
+            if (locKey === 'crowdfunder' && ai.mints >= 3) {
+                ai.mints -= 3;
+                loc.slots[0] = 'ai';
+                ai.mints += 2;
+                gameState.player.mints += 1;
+                setMessage(`${AI_PROFILES[gameState.aiPersona].name} visited Crowdfunder.`);
+                nextTurn();
+                return true;
+            } else if (locKey === 'recycler' && ai.mints >= 1 && ai.neighborhood.length > 0) {
+                // Recycle unbuilt or low star plan if AI has one
+                const unbuilt = ai.neighborhood.filter(p => !p.built);
+                if (unbuilt.length > 0) {
+                    const idx = ai.neighborhood.indexOf(unbuilt[0]);
+                    const removed = ai.neighborhood.splice(idx, 1)[0];
+                    const plan = getPlanById(removed.planId);
+                    const reward = plan.cost + plan.stars;
+
+                    ai.mints -= 1;
+                    loc.slots[0] = 'ai';
+                    gameState.deck.unshift(removed.planId);
+                    ai.mints += reward;
+
+                    setMessage(`${AI_PROFILES[gameState.aiPersona].name} recycled ${plan.name} (+${reward} Mints).`);
+                    nextTurn();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    </script>
+</body>
+</html>
