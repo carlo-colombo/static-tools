@@ -1018,30 +1018,51 @@
             const container = document.getElementById('draw-cards-options');
             container.innerHTML = '';
 
-            let html = '<div style="font-size: 0.85rem; color: var(--text-sub); text-align: left; margin-bottom: 8px;">Click items to select up to 2 cards:</div>';
+            let html = '<div style="font-size: 0.85rem; color: var(--text-sub); text-align: left; margin-bottom: 8px;">Select up to 2 items to draw into your hand/reserve:</div>';
 
-            html += '<div style="font-weight: bold; font-size: 0.8rem; color: var(--accent-blue); text-align: left; margin-top: 5px;">Face-Up Reserve Supply:</div>';
-            html += '<div style="display: flex; gap: 8px; margin: 6px 0;">';
+            html += '<div style="font-weight: bold; font-size: 0.85rem; color: var(--accent-blue); text-align: left; margin-top: 5px; display: flex; align-items: center; justify-content: space-between;">';
+            html += '<span>🎴 Reserve Component Cards (Added to Component Hand)</span>';
+            html += '</div>';
+            html += '<div style="display: flex; flex-direction: column; gap: 8px; margin: 8px 0;">';
+
             gameState.reserve.forEach((c, idx) => {
                 if (c) {
+                    const costIcons = c.foodCost.map(f => FOOD_TYPES[f] ? FOOD_TYPES[f].icon : '').join(' ');
+                    const foodInfo = FOOD_TYPES[c.foodSide] ? `${FOOD_TYPES[c.foodSide].icon} ${c.foodSide}` : c.foodSide;
                     html += `
-                        <button id="draw-res-${idx}" class="btn-action" style="flex:1; text-align: left; font-size: 0.75rem; padding: 6px; height: auto;" onclick="toggleDrawSelection('reserve', ${idx})">
-                            <div style="font-weight: bold;">${c.name} (${c.vp} VP)</div>
-                            <div style="color: var(--text-sub);">Food side: ${c.foodSide}</div>
+                        <button id="draw-res-${idx}" class="btn-action" style="text-align: left; padding: 10px; height: auto; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onclick="toggleDrawSelection('reserve', ${idx})">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; margin-bottom: 4px;">
+                                <div style="font-weight: bold; font-size: 0.85rem; color: var(--text-main);">${c.name}</div>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <span class="card-vp">${c.vp} VP</span>
+                                    <span id="draw-badge-res-${idx}" style="font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--text-sub);">Select</span>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.72rem; color: var(--accent-blue); margin-bottom: 4px;">Cost: ${costIcons} | Screws Max: 🔩 ${c.screwLimit}</div>
+                            <div class="card-effect-desc" style="margin: 4px 0;">${c.powerDesc}</div>
+                            <div style="font-size: 0.7rem; color: var(--accent-green);">If used as food: ${foodInfo}</div>
                         </button>
                     `;
                 }
             });
             html += '</div>';
 
-            html += '<div style="font-weight: bold; font-size: 0.8rem; color: var(--accent-amber); text-align: left; margin-top: 10px;">Food Supply Deck:</div>';
-            html += '<div style="display: flex; gap: 8px; margin: 6px 0;">';
+            html += '<div style="font-weight: bold; font-size: 0.85rem; color: var(--accent-amber); text-align: left; margin-top: 12px;">📦 Food Deck Top Cards (Added to Food Reserve)</div>';
+            html += '<div style="display: flex; gap: 8px; margin: 8px 0;">';
             html += `
-                <button id="draw-food-top1" class="btn-action" style="flex:1; font-size: 0.8rem; padding: 8px;" onclick="toggleDrawSelection('food_deck', 0)">
-                    📦 Draw 1 Food Card from Top
+                <button id="draw-food-top1" class="btn-action" style="flex:1; text-align: left; font-size: 0.8rem; padding: 10px; height: auto;" onclick="toggleDrawSelection('food_deck', 0)">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold;">📦 Top Food Card #1</span>
+                        <span id="draw-badge-food-0" style="font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--text-sub);">Select</span>
+                    </div>
+                    <div style="font-size: 0.72rem; color: var(--text-sub); margin-top: 4px;">Draw 1 food card from top of food deck into food reserve</div>
                 </button>
-                <button id="draw-food-top2" class="btn-action" style="flex:1; font-size: 0.8rem; padding: 8px;" onclick="toggleDrawSelection('food_deck', 1)">
-                    📦 Draw 2nd Food Card from Top
+                <button id="draw-food-top2" class="btn-action" style="flex:1; text-align: left; font-size: 0.8rem; padding: 10px; height: auto;" onclick="toggleDrawSelection('food_deck', 1)">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: bold;">📦 Top Food Card #2</span>
+                        <span id="draw-badge-food-1" style="font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--text-sub);">Select</span>
+                    </div>
+                    <div style="font-size: 0.72rem; color: var(--text-sub); margin-top: 4px;">Draw 2nd food card from top of food deck into food reserve</div>
                 </button>
             `;
             html += '</div>';
@@ -1068,19 +1089,42 @@
         function updateDrawModalUI() {
             ['reserve_0', 'reserve_1', 'reserve_2', 'food_deck_0', 'food_deck_1'].forEach(k => {
                 let btnId = '';
-                if (k.startsWith('reserve')) btnId = `draw-res-${k.split('_')[1]}`;
-                if (k === 'food_deck_0') btnId = 'draw-food-top1';
-                if (k === 'food_deck_1') btnId = 'draw-food-top2';
+                let badgeId = '';
+                if (k.startsWith('reserve')) {
+                    const idx = k.split('_')[1];
+                    btnId = `draw-res-${idx}`;
+                    badgeId = `draw-badge-res-${idx}`;
+                }
+                if (k === 'food_deck_0') {
+                    btnId = 'draw-food-top1';
+                    badgeId = 'draw-badge-food-0';
+                }
+                if (k === 'food_deck_1') {
+                    btnId = 'draw-food-top2';
+                    badgeId = 'draw-badge-food-1';
+                }
 
                 const el = document.getElementById(btnId);
+                const badgeEl = document.getElementById(badgeId);
+
                 if (el) {
                     const isSel = tempDrawSelection.some(item => item.key === k);
                     if (isSel) {
                         el.style.borderColor = 'var(--accent-green)';
                         el.style.background = 'rgba(52, 211, 153, 0.2)';
+                        if (badgeEl) {
+                            badgeEl.textContent = '✓ Selected';
+                            badgeEl.style.background = 'var(--accent-green)';
+                            badgeEl.style.color = '#0f172a';
+                        }
                     } else {
                         el.style.borderColor = '#475569';
                         el.style.background = 'var(--card-bg)';
+                        if (badgeEl) {
+                            badgeEl.textContent = 'Select';
+                            badgeEl.style.background = 'rgba(255,255,255,0.1)';
+                            badgeEl.style.color = 'var(--text-sub)';
+                        }
                     }
                 }
             });
