@@ -120,8 +120,8 @@
             margin-top: 2px;
         }
 
-        /* Nest Actions Bar */
-        .nest-actions-bar {
+        /* Rig Actions Bar */
+        .rig-actions-bar {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 12px;
@@ -131,7 +131,7 @@
             border: 1px solid #334155;
         }
 
-        .nest-btn {
+        .rig-btn {
             background: linear-gradient(135deg, #1e293b, #334155);
             border: 1px solid #475569;
             color: var(--text-main);
@@ -145,19 +145,19 @@
             transition: all 0.2s;
         }
 
-        .nest-btn:hover:not(:disabled) {
+        .rig-btn:hover:not(:disabled) {
             border-color: var(--accent-blue);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
         }
 
-        .nest-btn:disabled {
+        .rig-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
 
-        .nest-btn-title {
+        .rig-btn-title {
             font-size: 0.9rem;
             font-weight: bold;
             color: var(--accent-blue);
@@ -166,7 +166,7 @@
             gap: 6px;
         }
 
-        .nest-btn-desc {
+        .rig-btn-desc {
             font-size: 0.72rem;
             color: var(--text-sub);
             text-align: left;
@@ -441,8 +441,8 @@
                 <div class="status-val" id="flock-count-val" style="color: var(--accent-green);">0 / 6</div>
             </div>
             <div class="status-box">
-                <div class="status-label">Nest Eggs</div>
-                <div class="status-val" id="nest-eggs-val" style="color: var(--accent-amber);">0</div>
+                <div class="status-label">Chassis Screws</div>
+                <div class="status-val" id="chassis-screws-val" style="color: var(--accent-amber);">0</div>
             </div>
             <div class="status-box">
                 <div class="status-label">Objective</div>
@@ -454,25 +454,25 @@
             </div>
         </div>
 
-        <!-- Nest Actions Bar -->
-        <div class="nest-actions-bar">
-            <button class="nest-btn" id="action-play-btn" onclick="openPlayCardModal()">
-                <div class="nest-btn-title">🛠️ 1. Play Component</div>
-                <div class="nest-btn-desc">Play a card to Flock (pay food & eggs). Activates brown powers.</div>
+        <!-- Rig Actions Bar -->
+        <div class="rig-actions-bar">
+            <button class="rig-btn" id="action-play-btn" onclick="openPlayCardModal()">
+                <div class="rig-btn-title">🛠️ 1. Play Component</div>
+                <div class="rig-btn-desc">Play a card to Flock (pay food & screws). Activates brown powers.</div>
             </button>
-            <button class="nest-btn" id="action-draw-btn" onclick="openDrawCardsModal()">
-                <div class="nest-btn-title">🎴 2. Draw 2 Cards</div>
-                <div class="nest-btn-desc">Take 2 cards from Reserve, Food deck, or 1 of each. Activates brown powers.</div>
+            <button class="rig-btn" id="action-draw-btn" onclick="openDrawCardsModal()">
+                <div class="rig-btn-title">🎴 2. Draw 2 Cards</div>
+                <div class="rig-btn-desc">Take 2 cards from Reserve, Food deck, or 1 of each. Activates brown powers.</div>
             </button>
-            <button class="nest-btn" id="action-eggs-btn" onclick="openLayEggsModal()">
-                <div class="nest-btn-title">🪺 3. Lay Up to 3 Eggs</div>
-                <div class="nest-btn-desc">Lay up to 3 eggs on Flock cards or Nest. Activates brown powers.</div>
+            <button class="rig-btn" id="action-screws-btn" onclick="openInstallScrewsModal()">
+                <div class="rig-btn-title">🔩 3. Install Up to 3 Screws</div>
+                <div class="rig-btn-desc">Install up to 3 screws on Flock cards or Chassis. Activates brown powers.</div>
             </button>
         </div>
 
         <!-- Action Log Box -->
         <div id="log-box">
-            Welcome to Wingspan Pocket PC Parts! Select a Nest Action to begin your turn.
+            Welcome to Wingspan Pocket PC Parts! Select a Rig Action to begin your turn.
         </div>
 
         <!-- Player Flock (Stormo) -->
@@ -568,9 +568,9 @@
             <div class="option-group">
                 <label for="objective-select">Objective Card (Carte Obiettivo):</label>
                 <select id="objective-select">
-                    <option value="thermal">Thermal Master: +1 VP per egg on Cooling/Paste parts</option>
-                    <option value="processing">Processing Power: +1 VP per egg on Silicon/Power parts</option>
-                    <option value="capacity">High Capacity: +1 VP per egg on components with 3+ egg limit</option>
+                    <option value="thermal">Thermal Master: +1 VP per screw on Cooling/Paste parts</option>
+                    <option value="processing">Processing Power: +1 VP per screw on Silicon/Power parts</option>
+                    <option value="capacity">High Capacity: +1 VP per screw on components with 3+ screw limit</option>
                 </select>
             </div>
 
@@ -603,16 +603,16 @@
         </div>
     </div>
 
-    <!-- Lay Eggs Modal -->
-    <div id="lay-eggs-modal" class="modal">
+    <!-- Install Screws Modal -->
+    <div id="install-screws-modal" class="modal">
         <div class="modal-content">
-            <h2>LAY UP TO 3 EGGS</h2>
-            <p style="font-size: 0.85rem; color: var(--text-sub);">Distribute up to 3 eggs across valid Flock cards or Nest.</p>
-            <div id="lay-eggs-options" style="display: flex; flex-direction: column; gap: 10px; margin: 15px 0;">
-                <!-- Egg distribution sliders/buttons -->
+            <h2>INSTALL UP TO 3 SCREWS</h2>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Distribute up to 3 screws across valid Flock cards or Chassis.</p>
+            <div id="install-screws-options" style="display: flex; flex-direction: column; gap: 10px; margin: 15px 0;">
+                <!-- Screw distribution sliders/buttons -->
             </div>
-            <button class="btn-primary" id="confirm-eggs-btn" onclick="confirmLayEggs()">Confirm Eggs</button>
-            <button class="btn-action" style="background: #475569; margin-top: 8px;" onclick="closeModal('lay-eggs-modal')">Cancel</button>
+            <button class="btn-primary" id="confirm-screws-btn" onclick="confirmInstallScrews()">Confirm Screws</button>
+            <button class="btn-action" style="background: #475569; margin-top: 8px;" onclick="closeModal('install-screws-modal')">Cancel</button>
         </div>
     </div>
 
@@ -645,49 +645,49 @@
 
         // COMPONENT CARD DATASET (Double-Sided: Component Side / Food Side)
         const WINGSPAN_POCKET_DECK = [
-            { id: 'c1', name: 'Ryzen 9 7950X', foodSide: 'silicon', foodCost: ['silicon', 'power'], vp: 8, eggLimit: 3, powerDesc: 'Brown: Lay 1 Egg on this card.', powerType: 'egg_self' },
-            { id: 'c2', name: 'Core i9-14900K', foodSide: 'power', foodCost: ['power', 'power'], vp: 7, eggLimit: 2, powerDesc: 'Brown: Gain 1 Silicon food card.', powerType: 'gain_silicon' },
-            { id: 'c3', name: 'GeForce RTX 4090', foodSide: 'silicon', foodCost: ['silicon', 'silicon', 'power'], vp: 9, eggLimit: 2, powerDesc: 'Brown: Tuck 1 card from hand under this card.', powerType: 'tuck_hand' },
-            { id: 'c4', name: 'Radeon RX 7900 XTX', foodSide: 'cooling', foodCost: ['silicon', 'cooling'], vp: 6, eggLimit: 4, powerDesc: 'Brown: Gain 1 Cooling food card.', powerType: 'gain_cooling' },
-            { id: 'c5', name: 'Trident Z5 DDR5 64GB', foodSide: 'paste', foodCost: ['silicon', 'paste'], vp: 5, eggLimit: 3, powerDesc: 'Brown: Lay 1 Egg on any card.', powerType: 'egg_any' },
-            { id: 'c6', name: 'Crucial Gen5 4TB SSD', foodSide: 'cable', foodCost: ['silicon', 'cable'], vp: 6, eggLimit: 3, powerDesc: 'Brown: Tuck 1 card from reserve display.', powerType: 'tuck_reserve' },
-            { id: 'c7', name: 'Kraken 360 RGB AIO', foodSide: 'cooling', foodCost: ['cooling', 'cooling'], vp: 5, eggLimit: 4, powerDesc: 'Brown: Gain 1 Paste food card.', powerType: 'gain_paste' },
-            { id: 'c8', name: 'AX1200i Platinum PSU', foodSide: 'power', foodCost: ['power', 'cable'], vp: 6, eggLimit: 2, powerDesc: 'Brown: Gain 1 Power food card.', powerType: 'gain_power' },
-            { id: 'c9', name: 'Noctua NH-D15 Cooler', foodSide: 'cooling', foodCost: ['cooling'], vp: 4, eggLimit: 5, powerDesc: 'Brown: Lay 1 Egg on this card.', powerType: 'egg_self' },
-            { id: 'c10', name: 'O11 Dynamic EVO XL', foodSide: 'cable', foodCost: ['cable', 'power'], vp: 5, eggLimit: 3, powerDesc: 'Brown: Draw 1 card from deck.', powerType: 'draw_card' },
-            { id: 'c11', name: 'Ryzen 7 7800X3D', foodSide: 'silicon', foodCost: ['silicon'], vp: 5, eggLimit: 3, powerDesc: 'Brown: Lay 1 Egg on this card.', powerType: 'egg_self' },
-            { id: 'c12', name: 'GeForce RTX 4070 Ti', foodSide: 'paste', foodCost: ['silicon', 'paste'], vp: 6, eggLimit: 2, powerDesc: 'Brown: Tuck 1 card from hand.', powerType: 'tuck_hand' },
-            { id: 'c13', name: 'Vengeance DDR5 32GB', foodSide: 'silicon', foodCost: ['silicon'], vp: 3, eggLimit: 4, powerDesc: 'Brown: Lay 1 Egg on any card.', powerType: 'egg_any' },
-            { id: 'c14', name: 'Samsung 990 PRO 2TB', foodSide: 'cable', foodCost: ['cable'], vp: 4, eggLimit: 3, powerDesc: 'Brown: Gain 1 Cable food card.', powerType: 'gain_cable' },
-            { id: 'c15', name: 'RM850x 80+ Gold PSU', foodSide: 'power', foodCost: ['power'], vp: 3, eggLimit: 3, powerDesc: 'Brown: Gain 1 Power food card.', powerType: 'gain_power' },
-            { id: 'c16', name: '4000D Airflow Case', foodSide: 'cable', foodCost: ['cable'], vp: 3, eggLimit: 4, powerDesc: 'Brown: Draw 1 card from deck.', powerType: 'draw_card' },
-            { id: 'c17', name: 'Threadripper 7995WX', foodSide: 'silicon', foodCost: ['silicon', 'silicon', 'power', 'cooling'], vp: 10, eggLimit: 2, powerDesc: 'Brown: Lay 2 Eggs on this card.', powerType: 'egg_self_2' },
-            { id: 'c18', name: 'Tensor NPU Accelerator', foodSide: 'paste', foodCost: ['silicon', 'paste'], vp: 7, eggLimit: 2, powerDesc: 'Brown: Tuck 1 card from hand.', powerType: 'tuck_hand' },
-            { id: 'c19', name: 'Custom Liquid Loop', foodSide: 'cooling', foodCost: ['cooling', 'paste'], vp: 8, eggLimit: 3, powerDesc: 'Brown: Lay 1 Egg on this card.', powerType: 'egg_self' },
-            { id: 'c20', name: 'Dominator RGB DDR5', foodSide: 'power', foodCost: ['power', 'silicon'], vp: 4, eggLimit: 3, powerDesc: 'Brown: Gain 1 Silicon food card.', powerType: 'gain_silicon' },
-            { id: 'c21', name: 'SN850X NVMe 1TB', foodSide: 'cable', foodCost: ['cable'], vp: 3, eggLimit: 3, powerDesc: 'Brown: Tuck 1 card from reserve display.', powerType: 'tuck_reserve' },
-            { id: 'c22', name: 'Dark Power Pro 1500W', foodSide: 'power', foodCost: ['power', 'power'], vp: 7, eggLimit: 2, powerDesc: 'Brown: Gain 1 Cable food card.', powerType: 'gain_cable' },
-            { id: 'c23', name: 'LL120 RGB Fans 3-Pack', foodSide: 'cooling', foodCost: ['cooling'], vp: 3, eggLimit: 4, powerDesc: 'Brown: Lay 1 Egg on any card.', powerType: 'egg_any' },
-            { id: 'c24', name: 'FormD T1 ITX Case', foodSide: 'cable', foodCost: ['cable', 'cooling'], vp: 5, eggLimit: 2, powerDesc: 'Brown: Draw 1 card from deck.', powerType: 'draw_card' }
+            { id: 'c1', name: 'Ryzen 9 7950X', foodSide: 'silicon', foodCost: ['silicon', 'power'], vp: 8, screwLimit: 3, powerDesc: 'Brown: Install 1 Screw on this card.', powerType: 'screw_self' },
+            { id: 'c2', name: 'Core i9-14900K', foodSide: 'power', foodCost: ['power', 'power'], vp: 7, screwLimit: 2, powerDesc: 'Brown: Gain 1 Silicon food card.', powerType: 'gain_silicon' },
+            { id: 'c3', name: 'GeForce RTX 4090', foodSide: 'silicon', foodCost: ['silicon', 'silicon', 'power'], vp: 9, screwLimit: 2, powerDesc: 'Brown: Tuck 1 card from hand under this card.', powerType: 'tuck_hand' },
+            { id: 'c4', name: 'Radeon RX 7900 XTX', foodSide: 'cooling', foodCost: ['silicon', 'cooling'], vp: 6, screwLimit: 4, powerDesc: 'Brown: Gain 1 Cooling food card.', powerType: 'gain_cooling' },
+            { id: 'c5', name: 'Trident Z5 DDR5 64GB', foodSide: 'paste', foodCost: ['silicon', 'paste'], vp: 5, screwLimit: 3, powerDesc: 'Brown: Install 1 Screw on any card.', powerType: 'screw_any' },
+            { id: 'c6', name: 'Crucial Gen5 4TB SSD', foodSide: 'cable', foodCost: ['silicon', 'cable'], vp: 6, screwLimit: 3, powerDesc: 'Brown: Tuck 1 card from reserve display.', powerType: 'tuck_reserve' },
+            { id: 'c7', name: 'Kraken 360 RGB AIO', foodSide: 'cooling', foodCost: ['cooling', 'cooling'], vp: 5, screwLimit: 4, powerDesc: 'Brown: Gain 1 Paste food card.', powerType: 'gain_paste' },
+            { id: 'c8', name: 'AX1200i Platinum PSU', foodSide: 'power', foodCost: ['power', 'cable'], vp: 6, screwLimit: 2, powerDesc: 'Brown: Gain 1 Power food card.', powerType: 'gain_power' },
+            { id: 'c9', name: 'Noctua NH-D15 Cooler', foodSide: 'cooling', foodCost: ['cooling'], vp: 4, screwLimit: 5, powerDesc: 'Brown: Install 1 Screw on this card.', powerType: 'screw_self' },
+            { id: 'c10', name: 'O11 Dynamic EVO XL', foodSide: 'cable', foodCost: ['cable', 'power'], vp: 5, screwLimit: 3, powerDesc: 'Brown: Draw 1 card from deck.', powerType: 'draw_card' },
+            { id: 'c11', name: 'Ryzen 7 7800X3D', foodSide: 'silicon', foodCost: ['silicon'], vp: 5, screwLimit: 3, powerDesc: 'Brown: Install 1 Screw on this card.', powerType: 'screw_self' },
+            { id: 'c12', name: 'GeForce RTX 4070 Ti', foodSide: 'paste', foodCost: ['silicon', 'paste'], vp: 6, screwLimit: 2, powerDesc: 'Brown: Tuck 1 card from hand.', powerType: 'tuck_hand' },
+            { id: 'c13', name: 'Vengeance DDR5 32GB', foodSide: 'silicon', foodCost: ['silicon'], vp: 3, screwLimit: 4, powerDesc: 'Brown: Install 1 Screw on any card.', powerType: 'screw_any' },
+            { id: 'c14', name: 'Samsung 990 PRO 2TB', foodSide: 'cable', foodCost: ['cable'], vp: 4, screwLimit: 3, powerDesc: 'Brown: Gain 1 Cable food card.', powerType: 'gain_cable' },
+            { id: 'c15', name: 'RM850x 80+ Gold PSU', foodSide: 'power', foodCost: ['power'], vp: 3, screwLimit: 3, powerDesc: 'Brown: Gain 1 Power food card.', powerType: 'gain_power' },
+            { id: 'c16', name: '4000D Airflow Case', foodSide: 'cable', foodCost: ['cable'], vp: 3, screwLimit: 4, powerDesc: 'Brown: Draw 1 card from deck.', powerType: 'draw_card' },
+            { id: 'c17', name: 'Threadripper 7995WX', foodSide: 'silicon', foodCost: ['silicon', 'silicon', 'power', 'cooling'], vp: 10, screwLimit: 2, powerDesc: 'Brown: Install 2 Screws on this card.', powerType: 'screw_self_2' },
+            { id: 'c18', name: 'Tensor NPU Accelerator', foodSide: 'paste', foodCost: ['silicon', 'paste'], vp: 7, screwLimit: 2, powerDesc: 'Brown: Tuck 1 card from hand.', powerType: 'tuck_hand' },
+            { id: 'c19', name: 'Custom Liquid Loop', foodSide: 'cooling', foodCost: ['cooling', 'paste'], vp: 8, screwLimit: 3, powerDesc: 'Brown: Install 1 Screw on this card.', powerType: 'screw_self' },
+            { id: 'c20', name: 'Dominator RGB DDR5', foodSide: 'power', foodCost: ['power', 'silicon'], vp: 4, screwLimit: 3, powerDesc: 'Brown: Gain 1 Silicon food card.', powerType: 'gain_silicon' },
+            { id: 'c21', name: 'SN850X NVMe 1TB', foodSide: 'cable', foodCost: ['cable'], vp: 3, screwLimit: 3, powerDesc: 'Brown: Tuck 1 card from reserve display.', powerType: 'tuck_reserve' },
+            { id: 'c22', name: 'Dark Power Pro 1500W', foodSide: 'power', foodCost: ['power', 'power'], vp: 7, screwLimit: 2, powerDesc: 'Brown: Gain 1 Cable food card.', powerType: 'gain_cable' },
+            { id: 'c23', name: 'LL120 RGB Fans 3-Pack', foodSide: 'cooling', foodCost: ['cooling'], vp: 3, screwLimit: 4, powerDesc: 'Brown: Install 1 Screw on any card.', powerType: 'screw_any' },
+            { id: 'c24', name: 'FormD T1 ITX Case', foodSide: 'cable', foodCost: ['cable', 'cooling'], vp: 5, screwLimit: 2, powerDesc: 'Brown: Draw 1 card from deck.', powerType: 'draw_card' }
         ];
 
         // OBJECTIVES
         const OBJECTIVES = {
-            thermal: { id: 'thermal', name: 'Thermal Master', desc: '+1 VP per egg on Cooling/Paste parts', checkCard: c => c.foodCost.includes('cooling') || c.foodCost.includes('paste') },
-            processing: { id: 'processing', name: 'Processing Power', desc: '+1 VP per egg on Silicon/Power parts', checkCard: c => c.foodCost.includes('silicon') || c.foodCost.includes('power') },
-            capacity: { id: 'capacity', name: 'High Capacity', desc: '+1 VP per egg on components with 3+ egg limit', checkCard: c => c.eggLimit >= 3 }
+            thermal: { id: 'thermal', name: 'Thermal Master', desc: '+1 VP per screw on Cooling/Paste parts', checkCard: c => c.foodCost.includes('cooling') || c.foodCost.includes('paste') },
+            processing: { id: 'processing', name: 'Processing Power', desc: '+1 VP per screw on Silicon/Power parts', checkCard: c => c.foodCost.includes('silicon') || c.foodCost.includes('power') },
+            capacity: { id: 'capacity', name: 'High Capacity', desc: '+1 VP per screw on components with 3+ screw limit', checkCard: c => c.screwLimit >= 3 }
         };
 
         // GAME STATE
         let gameState = {
             turn: 1,
-            playerFlock: [], // array of { card, eggs: number, tuckedCards: [] }
-            playerNestEggs: 0,
+            playerFlock: [], // array of { card, screws: number, tuckedCards: [] }
+            playerChassisScrews: 0,
             playerHand: [], // array of card objects (component side)
             playerFood: [], // array of food type strings, e.g. ['silicon', 'power']
             automaFlock: [], // array of card objects
-            automaNestEggs: 0,
-            automaEggsOnCards: 0,
+            automaChassisScrews: 0,
+            automaScrewsOnCards: 0,
             automaTuckedCount: 0,
             automaFoodCards: [],
             reserve: [], // 3 face-up cards
@@ -700,7 +700,7 @@
         };
 
         let tempDrawSelection = [];
-        let tempEggDistribution = [];
+        let tempScrewDistribution = [];
 
         function shuffle(arr) {
             const array = [...arr];
@@ -726,12 +726,12 @@
             gameState = {
                 turn: 1,
                 playerFlock: [],
-                playerNestEggs: 0,
+                playerChassisScrews: 0,
                 playerHand: hand,
                 playerFood: foodHand,
                 automaFlock: [],
-                automaNestEggs: 0,
-                automaEggsOnCards: 0,
+                automaChassisScrews: 0,
+                automaScrewsOnCards: 0,
                 automaTuckedCount: 0,
                 automaFoodCards: [],
                 reserve: reserve,
@@ -740,7 +740,7 @@
                 automaDifficulty: difficulty,
                 objective: objectiveKey,
                 gameOver: false,
-                message: 'Game started! Select a Nest Action.'
+                message: 'Game started! Select a Rig Action.'
             };
 
             updateUI();
@@ -748,12 +748,12 @@
             renderLeaderboard();
         }
 
-        function countPlayerEggsOnCards() {
-            return gameState.playerFlock.reduce((acc, slot) => acc + slot.eggs, 0);
+        function countPlayerScrewsOnCards() {
+            return gameState.playerFlock.reduce((acc, slot) => acc + slot.screws, 0);
         }
 
-        function totalPlayerEggsAvailable() {
-            return gameState.playerNestEggs + countPlayerEggsOnCards();
+        function totalPlayerScrewsAvailable() {
+            return gameState.playerChassisScrews + countPlayerScrewsOnCards();
         }
 
         function canAffordFoodCost(foodCostArray) {
@@ -791,32 +791,32 @@
             }
         }
 
-        function deductEggsForFlockCost() {
+        function deductScrewsForFlockCost() {
             const currentFlockSize = gameState.playerFlock.length;
-            let eggCost = 0;
-            if (currentFlockSize === 2 || currentFlockSize === 3) eggCost = 1;
-            if (currentFlockSize === 4 || currentFlockSize === 5) eggCost = 2;
+            let screwCost = 0;
+            if (currentFlockSize === 2 || currentFlockSize === 3) screwCost = 1;
+            if (currentFlockSize === 4 || currentFlockSize === 5) screwCost = 2;
 
-            if (eggCost === 0) return true;
+            if (screwCost === 0) return true;
 
-            let remainingCost = eggCost;
-            if (gameState.playerNestEggs >= remainingCost) {
-                gameState.playerNestEggs -= remainingCost;
+            let remainingCost = screwCost;
+            if (gameState.playerChassisScrews >= remainingCost) {
+                gameState.playerChassisScrews -= remainingCost;
                 return true;
             } else {
-                remainingCost -= gameState.playerNestEggs;
-                gameState.playerNestEggs = 0;
+                remainingCost -= gameState.playerChassisScrews;
+                gameState.playerChassisScrews = 0;
             }
 
             for (let i = 0; i < gameState.playerFlock.length; i++) {
                 const slot = gameState.playerFlock[i];
-                if (slot.eggs >= remainingCost) {
-                    slot.eggs -= remainingCost;
+                if (slot.screws >= remainingCost) {
+                    slot.screws -= remainingCost;
                     remainingCost = 0;
                     break;
                 } else {
-                    remainingCost -= slot.eggs;
-                    slot.eggs = 0;
+                    remainingCost -= slot.screws;
+                    slot.screws = 0;
                 }
             }
 
@@ -842,15 +842,15 @@
                 const candidateCardIdx = gameState.reserve.findIndex(c => c !== null);
                 if (candidateCardIdx !== -1) {
                     const candidate = gameState.reserve[candidateCardIdx];
-                    const reqEggs = (gameState.automaFlock.length >= 2) ? 1 : 0;
-                    const availableEggs = gameState.automaNestEggs + gameState.automaEggsOnCards;
+                    const reqScrews = (gameState.automaFlock.length >= 2) ? 1 : 0;
+                    const availableScrews = gameState.automaChassisScrews + gameState.automaScrewsOnCards;
 
-                    if (diff === 'easy' || availableEggs >= reqEggs) {
-                        if (reqEggs > 0 && availableEggs >= reqEggs) {
-                            if (gameState.automaNestEggs >= reqEggs) {
-                                gameState.automaNestEggs -= reqEggs;
+                    if (diff === 'easy' || availableScrews >= reqScrews) {
+                        if (reqScrews > 0 && availableScrews >= reqScrews) {
+                            if (gameState.automaChassisScrews >= reqScrews) {
+                                gameState.automaChassisScrews -= reqScrews;
                             } else {
-                                gameState.automaEggsOnCards -= reqEggs;
+                                gameState.automaScrewsOnCards -= reqScrews;
                             }
                         }
                         const cardToPlay = gameState.reserve.splice(candidateCardIdx, 1)[0];
@@ -865,13 +865,13 @@
                 logMsg += `Phase 2: Could not play component to Flock. `;
             }
 
-            const eggAmount = (diff === 'hard') ? 2 : 1;
+            const screwAmount = (diff === 'hard') ? 2 : 1;
             if (gameState.automaFlock.length > 0) {
-                gameState.automaEggsOnCards += eggAmount;
-                logMsg += `Phase 3: Placed ${eggAmount} egg(s) on components.`;
+                gameState.automaScrewsOnCards += screwAmount;
+                logMsg += `Phase 3: Placed ${screwAmount} screw(s) on components.`;
             } else {
-                gameState.automaNestEggs += eggAmount;
-                logMsg += `Phase 3: Placed ${eggAmount} egg(s) on Nest.`;
+                gameState.automaChassisScrews += screwAmount;
+                logMsg += `Phase 3: Placed ${screwAmount} screw(s) on Chassis.`;
             }
 
             gameState.message += ` | ${logMsg}`;
@@ -891,26 +891,26 @@
                 const card = slot.card;
                 const pType = card.powerType;
 
-                if (pType === 'egg_self') {
-                    if (slot.eggs < card.eggLimit) {
-                        slot.eggs += 1;
-                        activatedEffects.push(`Lay 1 Egg on ${card.name}`);
+                if (pType === 'screw_self') {
+                    if (slot.screws < card.screwLimit) {
+                        slot.screws += 1;
+                        activatedEffects.push(`Install 1 Screw on ${card.name}`);
                     }
-                } else if (pType === 'egg_self_2') {
-                    const room = card.eggLimit - slot.eggs;
+                } else if (pType === 'screw_self_2') {
+                    const room = card.screwLimit - slot.screws;
                     const add = Math.min(2, room);
                     if (add > 0) {
-                        slot.eggs += add;
-                        activatedEffects.push(`Lay ${add} Egg(s) on ${card.name}`);
+                        slot.screws += add;
+                        activatedEffects.push(`Lay ${add} Screw(s) on ${card.name}`);
                     }
-                } else if (pType === 'egg_any') {
-                    let targetSlot = gameState.playerFlock.find(s => s.eggs < s.card.eggLimit);
+                } else if (pType === 'screw_any') {
+                    let targetSlot = gameState.playerFlock.find(s => s.screws < s.card.screwLimit);
                     if (targetSlot) {
-                        targetSlot.eggs += 1;
-                        activatedEffects.push(`Lay 1 Egg on ${targetSlot.card.name}`);
+                        targetSlot.screws += 1;
+                        activatedEffects.push(`Install 1 Screw on ${targetSlot.card.name}`);
                     } else {
-                        gameState.playerNestEggs += 1;
-                        activatedEffects.push(`Lay 1 Egg on Nest`);
+                        gameState.playerChassisScrews += 1;
+                        activatedEffects.push(`Install 1 Screw on Chassis`);
                     }
                 } else if (pType.startsWith('gain_')) {
                     const fKey = pType.replace('gain_', '');
@@ -946,7 +946,7 @@
             }
         }
 
-        // NEST ACTION 1: PLAY CARD
+        // RIG ACTION 1: PLAY CARD
         function openPlayCardModal() {
             if (gameState.gameOver) return;
             if (gameState.playerFlock.length >= 6) {
@@ -958,18 +958,18 @@
             container.innerHTML = '';
 
             const currentFlockSize = gameState.playerFlock.length;
-            let eggCost = 0;
-            if (currentFlockSize === 2 || currentFlockSize === 3) eggCost = 1;
-            if (currentFlockSize === 4 || currentFlockSize === 5) eggCost = 2;
+            let screwCost = 0;
+            if (currentFlockSize === 2 || currentFlockSize === 3) screwCost = 1;
+            if (currentFlockSize === 4 || currentFlockSize === 5) screwCost = 2;
 
-            const hasEggCost = totalPlayerEggsAvailable() >= eggCost;
+            const hasScrewCost = totalPlayerScrewsAvailable() >= screwCost;
 
             if (gameState.playerHand.length === 0) {
                 container.innerHTML = '<div style="color: var(--text-sub);">No component cards in hand to play.</div>';
             } else {
                 gameState.playerHand.forEach((card, idx) => {
                     const canAffordFood = canAffordFoodCost(card.foodCost);
-                    const canPlay = canAffordFood && hasEggCost;
+                    const canPlay = canAffordFood && hasScrewCost;
 
                     const row = document.createElement('div');
                     row.style.background = 'rgba(15,23,42,0.8)';
@@ -984,10 +984,10 @@
                     row.innerHTML = `
                         <div style="text-align: left;">
                             <div style="font-weight: bold; color: var(--text-main);">${card.name} (${card.vp} VP)</div>
-                            <div style="font-size: 0.75rem; color: var(--text-sub);">Food: ${costStr} | Egg Cost: ${eggCost} Egg(s)</div>
+                            <div style="font-size: 0.75rem; color: var(--text-sub);">Food: ${costStr} | Screw Cost: ${screwCost} Screw(s)</div>
                         </div>
                         <button class="btn-action" style="width: auto; padding: 6px 12px; background: ${canPlay ? 'var(--accent-blue)' : '#475569'}; color: white;" ${!canPlay ? 'disabled' : ''} onclick="confirmPlayCard(${idx})">
-                            ${!canAffordFood ? 'Cannot Afford Food' : (!hasEggCost ? 'Need Eggs' : 'Play Card')}
+                            ${!canAffordFood ? 'Cannot Afford Food' : (!hasScrewCost ? 'Need Screws' : 'Play Card')}
                         </button>
                     `;
                     container.appendChild(row);
@@ -1002,15 +1002,15 @@
             const card = gameState.playerHand.splice(handIdx, 1)[0];
 
             autoDeductFoodCost(card.foodCost);
-            deductEggsForFlockCost();
+            deductScrewsForFlockCost();
 
-            gameState.playerFlock.push({ card: card, eggs: 0, tuckedCards: [] });
+            gameState.playerFlock.push({ card: card, screws: 0, tuckedCards: [] });
             setMessage(`Played ${card.name} into your Flock!`);
 
-            afterNestActionTurn();
+            afterRigActionTurn();
         }
 
-        // NEST ACTION 2: DRAW CARDS
+        // RIG ACTION 2: DRAW CARDS
         function openDrawCardsModal() {
             if (gameState.gameOver) return;
             tempDrawSelection = [];
@@ -1115,97 +1115,97 @@
             });
 
             setMessage(`Drew 2 items: ${drawnSummary.join(', ')}.`);
-            afterNestActionTurn();
+            afterRigActionTurn();
         }
 
-        // NEST ACTION 3: LAY EGGS
-        function openLayEggsModal() {
+        // ACTION 3: INSTALL SCREWS
+        function openInstallScrewsModal() {
             if (gameState.gameOver) return;
 
-            tempEggDistribution = [];
-            const container = document.getElementById('lay-eggs-options');
+            tempScrewDistribution = [];
+            const container = document.getElementById('install-screws-options');
             container.innerHTML = '';
 
-            let html = '<div style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 10px;">Distribute up to 3 eggs across valid targets:</div>';
+            let html = '<div style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 10px;">Distribute up to 3 screws across valid targets:</div>';
 
             html += `
                 <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15,23,42,0.8); padding: 8px 12px; border-radius: 8px;">
                     <div>
-                        <div style="font-weight: bold; color: var(--accent-amber);">🪺 Main Player Nest</div>
-                        <div style="font-size: 0.75rem; color: var(--text-sub);">Current Eggs: ${gameState.playerNestEggs}</div>
+                        <div style="font-weight: bold; color: var(--accent-amber);">🔩 Main Chassis</div>
+                        <div style="font-size: 0.75rem; color: var(--text-sub);">Current Screws: ${gameState.playerChassisScrews}</div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <button class="btn-action" style="width:30px; height:30px; padding:0;" onclick="adjustEggTarget('nest', -1)">-</button>
-                        <span id="egg-val-nest" style="font-weight:bold; font-size:1.1rem; min-width: 20px;">0</span>
-                        <button class="btn-action" style="width:30px; height:30px; padding:0;" onclick="adjustEggTarget('nest', 1)">+</button>
+                        <button class="btn-action" style="width:30px; height:30px; padding:0;" onclick="adjustScrewTarget('chassis', -1)">-</button>
+                        <span id="screw-val-chassis" style="font-weight:bold; font-size:1.1rem; min-width: 20px;">0</span>
+                        <button class="btn-action" style="width:30px; height:30px; padding:0;" onclick="adjustScrewTarget('chassis', 1)">+</button>
                     </div>
                 </div>
             `;
 
             gameState.playerFlock.forEach((slot, idx) => {
-                const maxAllowed = slot.card.eggLimit - slot.eggs;
+                const maxAllowed = slot.card.screwLimit - slot.screws;
                 html += `
                     <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15,23,42,0.8); padding: 8px 12px; border-radius: 8px; margin-top: 6px;">
                         <div style="text-align: left;">
                             <div style="font-weight: bold; color: var(--text-main);">${slot.card.name}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-sub);">Eggs: ${slot.eggs} / ${slot.card.eggLimit} Max</div>
+                            <div style="font-size: 0.75rem; color: var(--text-sub);">Screws: ${slot.screws} / ${slot.card.screwLimit} Max</div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <button class="btn-action" style="width:30px; height:30px; padding:0;" ${maxAllowed <= 0 ? 'disabled' : ''} onclick="adjustEggTarget(${idx}, -1)">-</button>
-                            <span id="egg-val-${idx}" style="font-weight:bold; font-size:1.1rem; min-width: 20px;">0</span>
-                            <button class="btn-action" style="width:30px; height:30px; padding:0;" ${maxAllowed <= 0 ? 'disabled' : ''} onclick="adjustEggTarget(${idx}, 1)">+</button>
+                            <button class="btn-action" style="width:30px; height:30px; padding:0;" ${maxAllowed <= 0 ? 'disabled' : ''} onclick="adjustScrewTarget(${idx}, -1)">-</button>
+                            <span id="screw-val-${idx}" style="font-weight:bold; font-size:1.1rem; min-width: 20px;">0</span>
+                            <button class="btn-action" style="width:30px; height:30px; padding:0;" ${maxAllowed <= 0 ? 'disabled' : ''} onclick="adjustScrewTarget(${idx}, 1)">+</button>
                         </div>
                     </div>
                 `;
             });
 
             container.innerHTML = html;
-            document.getElementById('lay-eggs-modal').style.display = 'flex';
+            document.getElementById('install-screws-modal').style.display = 'flex';
         }
 
-        function adjustEggTarget(target, delta) {
-            const currentTotal = tempEggDistribution.reduce((a, b) => a + b.count, 0);
+        function adjustScrewTarget(target, delta) {
+            const currentTotal = tempScrewDistribution.reduce((a, b) => a + b.count, 0);
 
-            let existing = tempEggDistribution.find(e => e.target === target);
+            let existing = tempScrewDistribution.find(e => e.target === target);
             if (!existing) {
                 existing = { target: target, count: 0 };
-                tempEggDistribution.push(existing);
+                tempScrewDistribution.push(existing);
             }
 
             if (delta > 0) {
                 if (currentTotal >= 3) return;
-                if (target !== 'nest') {
+                if (target !== 'chassis') {
                     const slot = gameState.playerFlock[target];
-                    if (slot.eggs + existing.count >= slot.card.eggLimit) return;
+                    if (slot.screws + existing.count >= slot.card.screwLimit) return;
                 }
                 existing.count += 1;
             } else {
                 if (existing.count > 0) existing.count -= 1;
             }
 
-            const valEl = document.getElementById(`egg-val-${target}`);
+            const valEl = document.getElementById(`screw-val-${target}`);
             if (valEl) valEl.textContent = existing.count;
         }
 
-        function confirmLayEggs() {
-            closeModal('lay-eggs-modal');
+        function confirmInstallScrews() {
+            closeModal('install-screws-modal');
 
-            let laidSummary = 0;
-            tempEggDistribution.forEach(item => {
-                if (item.target === 'nest') {
-                    gameState.playerNestEggs += item.count;
-                    laidSummary += item.count;
+            let installedSummary = 0;
+            tempScrewDistribution.forEach(item => {
+                if (item.target === 'chassis') {
+                    gameState.playerChassisScrews += item.count;
+                    installedSummary += item.count;
                 } else if (typeof item.target === 'number' && gameState.playerFlock[item.target]) {
-                    gameState.playerFlock[item.target].eggs += item.count;
-                    laidSummary += item.count;
+                    gameState.playerFlock[item.target].screws += item.count;
+                    installedSummary += item.count;
                 }
             });
 
-            setMessage(`Laid ${laidSummary} egg(s) across Nest / Flock components.`);
-            afterNestActionTurn();
+            setMessage(`Installed ${installedSummary} screw(s) across Chassis / Flock components.`);
+            afterRigActionTurn();
         }
 
-        function afterNestActionTurn() {
+        function afterRigActionTurn() {
             triggerBrownPowersLeftToRight();
             executeAutomaTurn();
 
@@ -1226,7 +1226,7 @@
 
             // Player Scores
             const playerCardVP = gameState.playerFlock.reduce((acc, slot) => acc + slot.card.vp, 0);
-            const playerEggVP = gameState.playerNestEggs + countPlayerEggsOnCards();
+            const playerScrewVP = gameState.playerChassisScrews + countPlayerScrewsOnCards();
             const playerTuckedVP = gameState.playerFlock.reduce((acc, slot) => acc + (slot.tuckedCards ? slot.tuckedCards.length : 0), 0);
 
             // Objective Bonus VP
@@ -1234,20 +1234,20 @@
             let playerObjVP = 0;
             gameState.playerFlock.forEach(slot => {
                 if (objChecker(slot.card)) {
-                    playerObjVP += slot.eggs;
+                    playerObjVP += slot.screws;
                 }
             });
 
-            const totalPlayerScore = playerCardVP + playerEggVP + playerTuckedVP + playerObjVP;
+            const totalPlayerScore = playerCardVP + playerScrewVP + playerTuckedVP + playerObjVP;
 
             // Automa Scores (Official Wingspan Pocket Rules)
             const automaCardVP = gameState.automaFlock.length * 3;
-            const automaNestEggVP = gameState.automaNestEggs * 3;
-            const automaCardEggVP = gameState.automaEggsOnCards * 1;
+            const automaChassisScrewVP = gameState.automaChassisScrews * 3;
+            const automaCardScrewVP = gameState.automaScrewsOnCards * 1;
             const automaTuckedVP = gameState.automaTuckedCount * 1;
             const automaObjVP = Math.round(gameState.automaFlock.length * 0.5);
 
-            const totalAutomaScore = automaCardVP + automaNestEggVP + automaCardEggVP + automaTuckedVP + automaObjVP;
+            const totalAutomaScore = automaCardVP + automaChassisScrewVP + automaCardScrewVP + automaTuckedVP + automaObjVP;
 
             const outcome = totalPlayerScore >= totalAutomaScore ? 'Win' : 'Loss';
             saveScore(outcome, totalPlayerScore, totalAutomaScore);
@@ -1267,7 +1267,7 @@
 
             document.getElementById('scoring-breakdown-details').innerHTML = `
                 <div><strong>Player Card VP:</strong> ${playerCardVP}</div>
-                <div><strong>Player Egg VP:</strong> ${playerEggVP}</div>
+                <div><strong>Player Screw VP:</strong> ${playerScrewVP}</div>
                 <div><strong>Player Tucked Cards VP:</strong> ${playerTuckedVP}</div>
                 <div><strong>Player Objective (${OBJECTIVES[gameState.objective].name}) VP:</strong> ${playerObjVP}</div>
                 <div style="border-top: 1px solid #475569; margin: 4px 0; padding-top: 4px; font-weight: bold; color: var(--accent-green);">
@@ -1275,8 +1275,8 @@
                 </div>
                 <br/>
                 <div><strong>Automa Components VP (3 each):</strong> ${automaCardVP}</div>
-                <div><strong>Automa Nest Eggs VP (3 each):</strong> ${automaNestEggVP}</div>
-                <div><strong>Automa Component Eggs VP (1 each):</strong> ${automaCardEggVP}</div>
+                <div><strong>Automa Chassis Screws VP (3 each):</strong> ${automaChassisScrewVP}</div>
+                <div><strong>Automa Component Screws VP (1 each):</strong> ${automaCardScrewVP}</div>
                 <div><strong>Automa Tucked Cards VP:</strong> ${automaTuckedVP}</div>
                 <div><strong>Automa Objective Bonus VP:</strong> ${automaObjVP}</div>
                 <div style="border-top: 1px solid #475569; margin: 4px 0; padding-top: 4px; font-weight: bold; color: var(--accent-rose);">
@@ -1301,9 +1301,9 @@
         function updateUI() {
             document.getElementById('turn-val').textContent = gameState.turn;
             document.getElementById('flock-count-val').textContent = `${gameState.playerFlock.length} / 6`;
-            document.getElementById('nest-eggs-val').textContent = gameState.playerNestEggs;
+            document.getElementById('chassis-screws-val').textContent = gameState.playerChassisScrews;
             document.getElementById('objective-val').textContent = OBJECTIVES[gameState.objective].name;
-            document.getElementById('automa-score-val').textContent = Math.round(gameState.automaNestEggs * 3 + gameState.automaEggsOnCards + gameState.automaTuckedCount + gameState.automaFlock.length * 3);
+            document.getElementById('automa-score-val').textContent = Math.round(gameState.automaChassisScrews * 3 + gameState.automaScrewsOnCards + gameState.automaTuckedCount + gameState.automaFlock.length * 3);
 
             document.getElementById('food-count-val').textContent = gameState.playerFood.length;
             document.getElementById('hand-count-val').textContent = gameState.playerHand.length;
@@ -1315,7 +1315,7 @@
             document.getElementById('automa-status-content').innerHTML = `
                 <div><strong>Difficulty:</strong> ${gameState.automaDifficulty.toUpperCase()}</div>
                 <div><strong>Flock Components:</strong> ${gameState.automaFlock.length} / 6</div>
-                <div><strong>Nest Eggs:</strong> ${gameState.automaNestEggs} (3 VP each) | <strong>Component Eggs:</strong> ${gameState.automaEggsOnCards} (1 VP each)</div>
+                <div><strong>Chassis Screws:</strong> ${gameState.automaChassisScrews} (3 VP each) | <strong>Component Screws:</strong> ${gameState.automaScrewsOnCards} (1 VP each)</div>
                 <div><strong>Tucked Cards:</strong> ${gameState.automaTuckedCount} | <strong>Food Cards:</strong> ${gameState.automaFoodCards.length}</div>
             `;
 
@@ -1367,7 +1367,7 @@
                         </div>
                         <div class="card-effect-desc">${slotData.card.powerDesc}</div>
                         <div class="card-tokens-row">
-                            <span style="color: var(--accent-amber);">🪺 ${slotData.eggs} / ${slotData.card.eggLimit}</span>
+                            <span style="color: var(--accent-amber);">🔩 ${slotData.screws} / ${slotData.card.screwLimit}</span>
                             <span style="color: var(--accent-blue);">💾 ${slotData.tuckedCards ? slotData.tuckedCards.length : 0}</span>
                         </div>
                     `;
