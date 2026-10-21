@@ -237,6 +237,61 @@
             justify-content: space-between;
         }
 
+        @keyframes powerTriggerGlow {
+            0% {
+                transform: scale(1);
+                border-color: var(--accent-amber);
+                box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.9);
+            }
+            30% {
+                transform: scale(1.05);
+                border-color: #fbbf24;
+                box-shadow: 0 0 25px 8px rgba(251, 191, 36, 0.8);
+            }
+            60% {
+                transform: scale(1.02);
+                border-color: #38bdf8;
+                box-shadow: 0 0 15px 4px rgba(56, 189, 248, 0.6);
+            }
+            100% {
+                transform: scale(1);
+                border-color: #64748b;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4);
+            }
+        }
+
+        .flock-slot.power-triggered {
+            animation: powerTriggerGlow 1.4s ease-in-out;
+            position: relative;
+            z-index: 2;
+        }
+
+        .flock-slot.power-triggered::after {
+            content: "⚡ POWER ACTIVATED";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0f172a;
+            font-size: 0.62rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(251, 191, 36, 0.7);
+            white-space: nowrap;
+            animation: powerBadgeFade 1.8s ease-in-out forwards;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        @keyframes powerBadgeFade {
+            0% { opacity: 0; transform: translate(-50%, 6px) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+            70% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -6px) scale(0.9); }
+        }
+
         .card-header-row {
             width: 100%;
             display: flex;
@@ -437,7 +492,7 @@
                 <div class="status-val" id="turn-val">1</div>
             </div>
             <div class="status-box">
-                <div class="status-label">Flock (Max 6)</div>
+                <div class="status-label">Rig (Max 6)</div>
                 <div class="status-val" id="flock-count-val" style="color: var(--accent-green);">0 / 6</div>
             </div>
             <div class="status-box">
@@ -458,7 +513,7 @@
         <div class="rig-actions-bar">
             <button class="rig-btn" id="action-play-btn" onclick="openPlayCardModal()">
                 <div class="rig-btn-title">🛠️ 1. Play Component</div>
-                <div class="rig-btn-desc">Play a card to Flock (pay food & screws). Activates brown powers.</div>
+                <div class="rig-btn-desc">Play a card to Rig (pay food & screws). Activates brown powers.</div>
             </button>
             <button class="rig-btn" id="action-draw-btn" onclick="openDrawCardsModal()">
                 <div class="rig-btn-title">🎴 2. Draw 2 Cards</div>
@@ -466,7 +521,7 @@
             </button>
             <button class="rig-btn" id="action-screws-btn" onclick="openInstallScrewsModal()">
                 <div class="rig-btn-title">🔩 3. Install Up to 3 Screws</div>
-                <div class="rig-btn-desc">Install up to 3 screws on Flock cards or Chassis. Activates brown powers.</div>
+                <div class="rig-btn-desc">Install up to 3 screws on Rig cards or Chassis. Activates brown powers.</div>
             </button>
         </div>
 
@@ -475,10 +530,10 @@
             Welcome to Wingspan Pocket PC Parts! Select a Rig Action to begin your turn.
         </div>
 
-        <!-- Player Flock (Stormo) -->
+        <!-- Player Rig -->
         <div class="section-panel">
             <div class="section-title">
-                <span>🪶 Your Flock (Stormo - Max 6 Components)</span>
+                <span>🖥️ Your Rig (Max 6 Components)</span>
             </div>
             <div class="flock-grid" id="player-flock-grid">
                 <!-- 6 slots injected dynamically -->
@@ -582,7 +637,7 @@
     <div id="play-card-modal" class="modal">
         <div class="modal-content">
             <h2>PLAY COMPONENT CARD</h2>
-            <p style="font-size: 0.85rem; color: var(--text-sub);">Select a card from hand to play to your Flock.</p>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Select a card from hand to play to your Rig.</p>
             <div id="play-card-list" style="display: flex; flex-direction: column; gap: 10px; margin: 15px 0;">
                 <!-- Play card options injected -->
             </div>
@@ -607,7 +662,7 @@
     <div id="install-screws-modal" class="modal">
         <div class="modal-content">
             <h2>INSTALL UP TO 3 SCREWS</h2>
-            <p style="font-size: 0.85rem; color: var(--text-sub);">Distribute up to 3 screws across valid Flock cards or Chassis.</p>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Distribute up to 3 screws across valid Rig cards or Chassis.</p>
             <div id="install-screws-options" style="display: flex; flex-direction: column; gap: 10px; margin: 15px 0;">
                 <!-- Screw distribution sliders/buttons -->
             </div>
@@ -857,12 +912,12 @@
                         gameState.automaFlock.push(cardToPlay);
                         refillReserveDisplay();
                         playedCard = true;
-                        logMsg += `Phase 2: Played ${cardToPlay.name} into Flock. `;
+                        logMsg += `Phase 2: Played ${cardToPlay.name} into Rig. `;
                     }
                 }
             }
             if (!playedCard) {
-                logMsg += `Phase 2: Could not play component to Flock. `;
+                logMsg += `Phase 2: Could not play component to Rig. `;
             }
 
             const screwAmount = (diff === 'hard') ? 2 : 1;
@@ -886,15 +941,18 @@
 
         function triggerBrownPowersLeftToRight() {
             let activatedEffects = [];
+            let triggeredIndices = [];
 
-            gameState.playerFlock.forEach((slot) => {
+            gameState.playerFlock.forEach((slot, idx) => {
                 const card = slot.card;
                 const pType = card.powerType;
+                let triggered = false;
 
                 if (pType === 'screw_self') {
                     if (slot.screws < card.screwLimit) {
                         slot.screws += 1;
                         activatedEffects.push(`Install 1 Screw on ${card.name}`);
+                        triggered = true;
                     }
                 } else if (pType === 'screw_self_2') {
                     const room = card.screwLimit - slot.screws;
@@ -902,6 +960,7 @@
                     if (add > 0) {
                         slot.screws += add;
                         activatedEffects.push(`Lay ${add} Screw(s) on ${card.name}`);
+                        triggered = true;
                     }
                 } else if (pType === 'screw_any') {
                     let targetSlot = gameState.playerFlock.find(s => s.screws < s.card.screwLimit);
@@ -912,30 +971,39 @@
                         gameState.playerChassisScrews += 1;
                         activatedEffects.push(`Install 1 Screw on Chassis`);
                     }
+                    triggered = true;
                 } else if (pType.startsWith('gain_')) {
                     const fKey = pType.replace('gain_', '');
                     if (FOOD_TYPES[fKey]) {
                         gameState.playerFood.push(fKey);
                         activatedEffects.push(`Gained ${FOOD_TYPES[fKey].name} Food`);
+                        triggered = true;
                     }
                 } else if (pType === 'draw_card') {
                     if (gameState.deck.length > 0) {
                         const drawn = gameState.deck.pop();
                         gameState.playerHand.push(drawn);
                         activatedEffects.push(`Drew ${drawn.name}`);
+                        triggered = true;
                     }
                 } else if (pType === 'tuck_hand') {
                     if (gameState.playerHand.length > 0) {
                         const tucked = gameState.playerHand.pop();
                         slot.tuckedCards.push(tucked);
                         activatedEffects.push(`Tucked ${tucked.name} under ${card.name}`);
+                        triggered = true;
                     }
                 } else if (pType === 'tuck_reserve') {
                     if (gameState.reserve.length > 0) {
                         const tucked = gameState.reserve.pop();
                         slot.tuckedCards.push(tucked);
                         activatedEffects.push(`Tucked ${tucked.name} from Reserve`);
+                        triggered = true;
                     }
+                }
+
+                if (triggered) {
+                    triggeredIndices.push(idx);
                 }
             });
 
@@ -944,13 +1012,15 @@
             if (activatedEffects.length > 0) {
                 gameState.message += ` | Brown Powers: ${activatedEffects.join(', ')}.`;
             }
+
+            return triggeredIndices;
         }
 
         // RIG ACTION 1: PLAY CARD
         function openPlayCardModal() {
             if (gameState.gameOver) return;
             if (gameState.playerFlock.length >= 6) {
-                setMessage("Flock is already full (max 6 components)!");
+                setMessage("Rig is already full (max 6 components)!");
                 return;
             }
 
@@ -1005,7 +1075,7 @@
             deductScrewsForFlockCost();
 
             gameState.playerFlock.push({ card: card, screws: 0, tuckedCards: [] });
-            setMessage(`Played ${card.name} into your Flock!`);
+            setMessage(`Played ${card.name} into your Rig!`);
 
             afterRigActionTurn();
         }
@@ -1201,27 +1271,27 @@
                 }
             });
 
-            setMessage(`Installed ${installedSummary} screw(s) across Chassis / Flock components.`);
+            setMessage(`Installed ${installedSummary} screw(s) across Chassis / Rig components.`);
             afterRigActionTurn();
         }
 
         function afterRigActionTurn() {
-            triggerBrownPowersLeftToRight();
+            const triggeredIndices = triggerBrownPowersLeftToRight();
             executeAutomaTurn();
 
             // Game End Condition Check: 6 cards in player flock or automa flock
             if (gameState.playerFlock.length >= 6 || gameState.automaFlock.length >= 6) {
-                calculateFinalScores();
+                calculateFinalScores(triggeredIndices);
                 return;
             }
 
             gameState.turn += 1;
-            updateUI();
+            updateUI(triggeredIndices);
             saveStateToUrl();
         }
 
         // END GAME SCORING & PERSISTENCE
-        function calculateFinalScores() {
+        function calculateFinalScores(triggeredIndices = []) {
             gameState.gameOver = true;
 
             // Player Scores
@@ -1258,11 +1328,11 @@
             if (outcome === 'Win') {
                 goTitle.textContent = "VICTORY!";
                 goTitle.style.color = "var(--accent-green)";
-                goMsg.textContent = `Your stormo of components beat the Automa AI!`;
+                goMsg.textContent = `Your rig of components beat the Automa AI!`;
             } else {
                 goTitle.textContent = "DEFEAT";
                 goTitle.style.color = "var(--accent-rose)";
-                goMsg.textContent = `The Automa AI outscored your stormo of components.`;
+                goMsg.textContent = `The Automa AI outscored your rig of components.`;
             }
 
             document.getElementById('scoring-breakdown-details').innerHTML = `
@@ -1285,7 +1355,7 @@
             `;
 
             document.getElementById('game-over-modal').style.display = 'flex';
-            updateUI();
+            updateUI(triggeredIndices);
             saveStateToUrl();
         }
 
@@ -1298,7 +1368,7 @@
             document.getElementById('log-box').textContent = msg;
         }
 
-        function updateUI() {
+        function updateUI(triggeredIndices = []) {
             document.getElementById('turn-val').textContent = gameState.turn;
             document.getElementById('flock-count-val').textContent = `${gameState.playerFlock.length} / 6`;
             document.getElementById('chassis-screws-val').textContent = gameState.playerChassisScrews;
@@ -1314,7 +1384,7 @@
 
             document.getElementById('automa-status-content').innerHTML = `
                 <div><strong>Difficulty:</strong> ${gameState.automaDifficulty.toUpperCase()}</div>
-                <div><strong>Flock Components:</strong> ${gameState.automaFlock.length} / 6</div>
+                <div><strong>Rig Components:</strong> ${gameState.automaFlock.length} / 6</div>
                 <div><strong>Chassis Screws:</strong> ${gameState.automaChassisScrews} (3 VP each) | <strong>Component Screws:</strong> ${gameState.automaScrewsOnCards} (1 VP each)</div>
                 <div><strong>Tucked Cards:</strong> ${gameState.automaTuckedCount} | <strong>Food Cards:</strong> ${gameState.automaFoodCards.length}</div>
             `;
@@ -1359,7 +1429,8 @@
                 const slotData = gameState.playerFlock[i];
 
                 if (slotData) {
-                    slotEl.className = 'flock-slot occupied';
+                    const isTriggered = triggeredIndices.includes(i);
+                    slotEl.className = `flock-slot occupied${isTriggered ? ' power-triggered' : ''}`;
                     slotEl.innerHTML = `
                         <div class="card-header-row">
                             <span class="card-name">${slotData.card.name}</span>
