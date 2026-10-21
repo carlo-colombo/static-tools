@@ -972,8 +972,22 @@
         // Refill the bird Supply at the end of turn by flipping over the top card from the adjacent food deck
         function refillReserveDisplay() {
             for (let i = 0; i < 4; i++) {
-                if (gameState.reserve[i] === null && gameState.foodDecks[i] && gameState.foodDecks[i].length > 0) {
-                    gameState.reserve[i] = gameState.foodDecks[i].pop();
+                if (gameState.reserve[i] === null) {
+                    let deckToDraw = -1;
+                    if (gameState.foodDecks[i] && gameState.foodDecks[i].length > 0) {
+                        deckToDraw = i;
+                    } else {
+                        for (let d = 1; d < 4; d++) {
+                            const checkIdx = (i + d) % 4;
+                            if (gameState.foodDecks[checkIdx] && gameState.foodDecks[checkIdx].length > 0) {
+                                deckToDraw = checkIdx;
+                                break;
+                            }
+                        }
+                    }
+                    if (deckToDraw !== -1) {
+                        gameState.reserve[i] = gameState.foodDecks[deckToDraw].pop();
+                    }
                 }
             }
         }
@@ -1212,24 +1226,76 @@
         function openDrawCardsModal() {
             if (gameState.gameOver) return;
             tempDrawSelection = [];
+            renderDrawCardsModal();
+            document.getElementById('draw-cards-modal').style.display = 'flex';
+        }
+
+        function resetDrawSelection() {
+            tempDrawSelection = [];
+            renderDrawCardsModal();
+        }
+
+        function renderDrawCardsModal() {
+            // Calculate virtual reserve and virtual food decks based on current selections
+            const virtualReserve = [...gameState.reserve];
+            const virtualFoodDecks = gameState.foodDecks.map(deck => [...deck]);
+
+            tempDrawSelection.forEach(sel => {
+                if (sel.type === 'reserve') {
+                    virtualReserve[sel.index] = null;
+                } else if (sel.type === 'food_deck') {
+                    if (virtualFoodDecks[sel.index].length > 0) {
+                        virtualFoodDecks[sel.index].pop();
+                    }
+                }
+            });
 
             const container = document.getElementById('draw-cards-options');
             container.innerHTML = '';
 
-            let html = '<div style="font-size: 0.85rem; color: var(--text-sub); text-align: left; margin-bottom: 8px;">Select up to 2 items to draw into your hand/reserve:</div>';
+            let html = '<div style="font-size: 0.85rem; color: var(--text-sub); text-align: left; margin-bottom: 8px;">Select up to 2 items (components from face-up reserve or food from top of decks):</div>';
 
+            // Selection Summary Header
+            if (tempDrawSelection.length > 0) {
+                const summaryItems = tempDrawSelection.map((s, idx) => {
+                    if (s.type === 'reserve') {
+                        const card = gameState.reserve[s.index];
+                        return `#${idx + 1}: ${card ? card.name : 'Component'} (Component)`;
+                    } else {
+                        const fInfo = FOOD_TYPES[s.foodSide];
+                        return `#${idx + 1}: ${fInfo ? fInfo.icon + ' ' + fInfo.name : s.foodSide} (Food)`;
+                    }
+                });
+
+                html += `
+                    <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-blue); padding: 8px 12px; border-radius: 8px; text-align: left; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--accent-blue); font-weight: bold;">SELECTED (${tempDrawSelection.length}/2):</div>
+                            <div style="font-size: 0.85rem; color: var(--text-main); font-weight: 600;">${summaryItems.join(' | ')}</div>
+                        </div>
+                        <button class="btn-action" style="width: auto; padding: 4px 10px; font-size: 0.75rem; background: #475569;" onclick="resetDrawSelection()">Reset</button>
+                    </div>
+                `;
+            }
+
+            // Face-Up Supply Cards (Component Side Up)
             html += '<div style="font-weight: bold; font-size: 0.85rem; color: var(--accent-blue); text-align: left; margin-top: 5px;">';
-            html += '<span>🎴 Face-Up Supply Cards (Bird-Side Up)</span>';
+            html += '<span>🎴 Face-Up Supply Cards (Component Side Up)</span>';
             html += '</div>';
             html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 8px 0;">';
 
             for (let idx = 0; idx < 4; idx++) {
-                const c = gameState.reserve[idx];
+                const c = virtualReserve[idx];
+                const originalCard = gameState.reserve[idx];
+                const isSelectedHere = tempDrawSelection.some(s => s.type === 'reserve' && s.index === idx);
+
                 if (c) {
                     const costIcons = c.foodCost.map(f => FOOD_TYPES[f] ? FOOD_TYPES[f].icon : '').join(' ');
                     const foodInfo = FOOD_TYPES[c.foodSide] ? `${FOOD_TYPES[c.foodSide].icon} ${c.foodSide}` : c.foodSide;
+                    const canSelect = tempDrawSelection.length < 2;
+
                     html += `
-                        <button id="draw-res-${idx}" class="btn-action" style="text-align: left; padding: 10px; height: auto; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onclick="toggleDrawSelection('reserve', ${idx})">
+                        <button class="btn-action" style="text-align: left; padding: 10px; height: auto; border-radius: 8px; cursor: ${canSelect ? 'pointer' : 'not-allowed'}; transition: all 0.2s; border-color: #475569; background: var(--card-bg);" ${canSelect ? `onclick="selectDrawItem('reserve', ${idx})"` : 'disabled'}>
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; margin-bottom: 4px;">
                                 <div style="font-weight: bold; font-size: 0.85rem; color: var(--text-main);">${c.name}</div>
                                 <span class="card-vp">${c.vp} VP</span>
@@ -1238,9 +1304,17 @@
                             <div class="card-effect-desc" style="margin: 4px 0;">${c.powerDesc}</div>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                                 <span style="font-size: 0.7rem; color: var(--accent-green);">Food side: ${foodInfo}</span>
-                                <span id="draw-badge-res-${idx}" style="font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--text-sub);">Select</span>
+                                <span style="font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(56,189,248,0.2); color: var(--accent-blue);">+ Draw Component</span>
                             </div>
                         </button>
+                    `;
+                } else if (isSelectedHere) {
+                    html += `
+                        <div style="background: rgba(52, 211, 153, 0.15); border: 1px solid var(--accent-green); border-radius: 8px; padding: 10px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <span style="font-size: 0.8rem; font-weight: bold; color: var(--accent-green);">✓ Drawn as Component</span>
+                            <span style="font-size: 0.7rem; color: var(--text-sub); margin-top: 2px;">${originalCard ? originalCard.name : ''}</span>
+                            <span style="font-size: 0.68rem; color: var(--text-sub); font-style: italic; margin-top: 4px;">Replenishes at end of turn</span>
+                        </div>
                     `;
                 } else {
                     html += `
@@ -1252,27 +1326,34 @@
             }
             html += '</div>';
 
-            html += '<div style="font-weight: bold; font-size: 0.85rem; color: var(--accent-amber); text-align: left; margin-top: 12px;">📦 Food Decks (Food-Side Up)</div>';
+            // Food Decks (Food Side Up)
+            html += '<div style="font-weight: bold; font-size: 0.85rem; color: var(--accent-amber); text-align: left; margin-top: 12px;">📦 Food Decks (Food Side Up)</div>';
             html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 8px 0;">';
 
             for (let deckIdx = 0; deckIdx < 4; deckIdx++) {
-                const deck = gameState.foodDecks[deckIdx];
+                const deck = virtualFoodDecks[deckIdx];
+                const origDeckLength = gameState.foodDecks[deckIdx].length;
+                const canSelect = tempDrawSelection.length < 2 && deck.length > 0;
+
                 if (deck.length > 0) {
                     const topCard = deck[deck.length - 1];
                     const foodInfo = FOOD_TYPES[topCard.foodSide];
+
                     html += `
-                        <button id="draw-food-${deckIdx}" class="btn-action" style="text-align: left; font-size: 0.8rem; padding: 10px; height: auto;" onclick="toggleDrawSelection('food_deck', ${deckIdx})">
+                        <button class="btn-action" style="text-align: left; font-size: 0.8rem; padding: 10px; height: auto; border-color: #475569; background: var(--card-bg); cursor: ${canSelect ? 'pointer' : 'not-allowed'};" ${canSelect ? `onclick="selectDrawItem('food_deck', ${deckIdx})"` : 'disabled'}>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-weight: bold; color: ${foodInfo.color};">${foodInfo.icon} Deck #${deckIdx + 1} (${deck.length} cards)</span>
-                                <span id="draw-badge-food-${deckIdx}" style="font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--text-sub);">Select (0)</span>
+                                <span style="font-weight: bold; color: ${foodInfo.color};">${foodInfo.icon} Deck #${deckIdx + 1} (${deck.length} remaining)</span>
+                                <span style="font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; background: rgba(251,191,36,0.2); color: var(--accent-amber);">+ Draw Food</span>
                             </div>
-                            <div style="font-size: 0.72rem; color: var(--text-sub); margin-top: 4px;">Top Card: ${foodInfo.name}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-main); font-weight: bold; margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                                Top Food: <span class="food-pill" style="color: ${foodInfo.color}; padding: 1px 6px;">${foodInfo.icon} ${foodInfo.name}</span>
+                            </div>
                         </button>
                     `;
                 } else {
                     html += `
                         <div style="background: rgba(15,23,42,0.4); border: 1px dashed #475569; border-radius: 8px; padding: 10px; font-size: 0.75rem; color: var(--text-sub); display: flex; align-items: center; justify-content: center;">
-                            Deck #${deckIdx + 1} Empty
+                            Deck #${deckIdx + 1} ${origDeckLength === 0 ? 'Empty' : 'Depleted'}
                         </div>
                     `;
                 }
@@ -1280,99 +1361,35 @@
             html += '</div>';
 
             container.innerHTML = html;
-            updateDrawModalUI();
-            document.getElementById('draw-cards-modal').style.display = 'flex';
-        }
-
-        function toggleDrawSelection(type, index) {
-            if (tempDrawSelection.length >= 2) {
-                // If already at 2 selections, try removing one if clicking existing selection
-            }
-
-            if (type === 'reserve') {
-                const key = `reserve_${index}`;
-                const existingIdx = tempDrawSelection.findIndex(item => item.key === key);
-                if (existingIdx !== -1) {
-                    tempDrawSelection.splice(existingIdx, 1);
-                } else {
-                    if (tempDrawSelection.length < 2) {
-                        tempDrawSelection.push({ key: key, type: 'reserve', index: index });
-                    }
-                }
-            } else if (type === 'food_deck') {
-                const deck = gameState.foodDecks[index];
-                const countOfThisDeckInSelection = tempDrawSelection.filter(item => item.type === 'food_deck' && item.index === index).length;
-
-                if (tempDrawSelection.length < 2 && countOfThisDeckInSelection < deck.length) {
-                    tempDrawSelection.push({ key: `food_deck_${index}_${countOfThisDeckInSelection}`, type: 'food_deck', index: index });
-                } else if (countOfThisDeckInSelection > 0) {
-                    // If full or no more cards in deck, remove one selection from this deck
-                    const removeIdx = tempDrawSelection.findIndex(item => item.type === 'food_deck' && item.index === index);
-                    if (removeIdx !== -1) {
-                        tempDrawSelection.splice(removeIdx, 1);
-                    }
-                }
-            }
-
-            updateDrawModalUI();
-        }
-
-        function updateDrawModalUI() {
-            // Update Reserve Buttons UI
-            for (let idx = 0; idx < 4; idx++) {
-                const el = document.getElementById(`draw-res-${idx}`);
-                const badgeEl = document.getElementById(`draw-badge-res-${idx}`);
-                if (el) {
-                    const isSel = tempDrawSelection.some(item => item.type === 'reserve' && item.index === idx);
-                    if (isSel) {
-                        el.style.borderColor = 'var(--accent-green)';
-                        el.style.background = 'rgba(52, 211, 153, 0.2)';
-                        if (badgeEl) {
-                            badgeEl.textContent = '✓ Selected';
-                            badgeEl.style.background = 'var(--accent-green)';
-                            badgeEl.style.color = '#0f172a';
-                        }
-                    } else {
-                        el.style.borderColor = '#475569';
-                        el.style.background = 'var(--card-bg)';
-                        if (badgeEl) {
-                            badgeEl.textContent = 'Select';
-                            badgeEl.style.background = 'rgba(255,255,255,0.1)';
-                            badgeEl.style.color = 'var(--text-sub)';
-                        }
-                    }
-                }
-            }
-
-            // Update Food Deck Buttons UI
-            for (let deckIdx = 0; deckIdx < 4; deckIdx++) {
-                const el = document.getElementById(`draw-food-${deckIdx}`);
-                const badgeEl = document.getElementById(`draw-badge-food-${deckIdx}`);
-                if (el) {
-                    const countSelected = tempDrawSelection.filter(item => item.type === 'food_deck' && item.index === deckIdx).length;
-                    if (countSelected > 0) {
-                        el.style.borderColor = 'var(--accent-amber)';
-                        el.style.background = 'rgba(251, 191, 36, 0.2)';
-                        if (badgeEl) {
-                            badgeEl.textContent = `✓ Selected (${countSelected})`;
-                            badgeEl.style.background = 'var(--accent-amber)';
-                            badgeEl.style.color = '#0f172a';
-                        }
-                    } else {
-                        el.style.borderColor = '#475569';
-                        el.style.background = 'var(--card-bg)';
-                        if (badgeEl) {
-                            badgeEl.textContent = 'Select (0)';
-                            badgeEl.style.background = 'rgba(255,255,255,0.1)';
-                            badgeEl.style.color = 'var(--text-sub)';
-                        }
-                    }
-                }
-            }
 
             const confirmBtn = document.getElementById('confirm-draw-btn');
             confirmBtn.disabled = tempDrawSelection.length === 0;
             confirmBtn.textContent = `Confirm Draw (${tempDrawSelection.length}/2 Selected)`;
+        }
+
+        function selectDrawItem(type, index) {
+            if (tempDrawSelection.length >= 2) return;
+
+            if (type === 'reserve') {
+                const card = gameState.reserve[index];
+                if (card && !tempDrawSelection.some(s => s.type === 'reserve' && s.index === index)) {
+                    tempDrawSelection.push({ type: 'reserve', index: index });
+                }
+            } else if (type === 'food_deck') {
+                const virtualFoodDecks = gameState.foodDecks.map(deck => [...deck]);
+                tempDrawSelection.forEach(s => {
+                    if (s.type === 'food_deck') {
+                        virtualFoodDecks[s.index].pop();
+                    }
+                });
+                const deck = virtualFoodDecks[index];
+                if (deck && deck.length > 0) {
+                    const topCard = deck[deck.length - 1];
+                    tempDrawSelection.push({ type: 'food_deck', index: index, foodSide: topCard.foodSide });
+                }
+            }
+
+            renderDrawCardsModal();
         }
 
         function confirmDrawSelection() {
