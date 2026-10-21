@@ -123,17 +123,58 @@
             margin-top: 2px;
         }
 
-        /* Resource Inventory Bar */
+        /* Resource Feeder & Inventory Bar */
+        .resource-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: var(--panel-bg);
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .feeder-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px dashed var(--accent-blue);
+        }
+
+        .feeder-title {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+        }
+
+        .feeder-cubes {
+            display: flex;
+            gap: 8px;
+        }
+
+        .feeder-cube {
+            padding: 4px 10px;
+            background: var(--card-bg);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border: 1px solid #475569;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .feeder-cube:hover { transform: scale(1.05); }
+
         .resource-bar {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-around;
             align-items: center;
-            background: var(--panel-bg);
-            padding: 10px 15px;
-            border-radius: 12px;
-            border: 1px solid #334155;
-            gap: 15px;
+            gap: 12px;
         }
 
         .resource-pill {
@@ -484,26 +525,37 @@
             </div>
         </div>
 
-        <!-- Resource Inventory -->
-        <div class="resource-bar">
-            <div class="resource-pill" style="color: var(--silicon-color);">
-                <span>💎 Silicon:</span> <span id="res-silicon">2</span>
+        <!-- Resource Feeder & Inventory -->
+        <div class="resource-section">
+            <div class="feeder-box">
+                <span class="feeder-title">🎲 Resource Feeder Tray:</span>
+                <div class="feeder-cubes" id="feeder-cubes-container">
+                    <!-- Cubes injected -->
+                </div>
+                <button id="reroll-feeder-btn" style="background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
+                    Reroll Feeder
+                </button>
             </div>
-            <div class="resource-pill" style="color: var(--power-color);">
-                <span>⚡ Power:</span> <span id="res-power">1</span>
+            <div class="resource-bar">
+                <div class="resource-pill" style="color: var(--silicon-color);">
+                    <span>💎 Silicon:</span> <span id="res-silicon">2</span>
+                </div>
+                <div class="resource-pill" style="color: var(--power-color);">
+                    <span>⚡ Power:</span> <span id="res-power">1</span>
+                </div>
+                <div class="resource-pill" style="color: var(--cooling-color);">
+                    <span>❄️ Cooling:</span> <span id="res-cooling">1</span>
+                </div>
+                <div class="resource-pill" style="color: var(--paste-color);">
+                    <span>🧪 Paste:</span> <span id="res-paste">1</span>
+                </div>
+                <div class="resource-pill" style="color: var(--accent-green);">
+                    <span>🃏 Cards:</span> <span id="res-hand-count">5</span>
+                </div>
+                <button id="install-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer;">
+                    🛠️ Install Part
+                </button>
             </div>
-            <div class="resource-pill" style="color: var(--cooling-color);">
-                <span>❄️ Cooling:</span> <span id="res-cooling">1</span>
-            </div>
-            <div class="resource-pill" style="color: var(--paste-color);">
-                <span>🧪 Paste:</span> <span id="res-paste">1</span>
-            </div>
-            <div class="resource-pill" style="color: var(--accent-green);">
-                <span>🃏 Cards:</span> <span id="res-hand-count">5</span>
-            </div>
-            <button id="install-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer;">
-                🛠️ Install Part
-            </button>
         </div>
 
         <!-- Log Message -->
@@ -520,7 +572,7 @@
                         ⚡ Processing Habitat (CPUs & GPUs)
                     </div>
                     <button class="habitat-action-btn" id="proc-action-btn" onclick="executeHabitatAction('processing')">
-                        Procure Resources (+1 💎/⚡/❄️)
+                        Procure Resources (+1 💎/⚡/❄️ from Feeder)
                     </button>
                 </div>
                 <div class="slots-grid" id="processing-slots">
@@ -656,12 +708,10 @@
     <!-- Resource Selection Modal -->
     <div id="resource-modal" class="modal">
         <div class="modal-content">
-            <h2>SELECT RESOURCE</h2>
-            <p style="font-size: 0.85rem; color: var(--text-sub);">Choose a resource to gain from Procurement action:</p>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0;">
-                <button class="btn-primary" style="background: var(--silicon-color); color: #000;" onclick="confirmGainResource('silicon')">💎 Silicon</button>
-                <button class="btn-primary" style="background: var(--power-color); color: #000;" onclick="confirmGainResource('power')">⚡ Power</button>
-                <button class="btn-primary" style="background: var(--cooling-color); color: #fff;" onclick="confirmGainResource('cooling')">❄️ Cooling</button>
+            <h2>SELECT RESOURCE FROM FEEDER</h2>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Take 1 available resource cube from the feeder tray:</p>
+            <div id="resource-feeder-options" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0;">
+                <!-- Dynamic Feeder Cube Buttons -->
             </div>
         </div>
     </div>
@@ -741,6 +791,9 @@
             { id: 'total_installed', title: 'Total Components Installed', check: (state) => countTotalParts(state.playerBoard) }
         ];
 
+        // RESOURCE TYPES
+        const RESOURCE_TYPES = ['silicon', 'power', 'cooling'];
+
         // GAME STATE
         let gameState = {
             round: 1,
@@ -750,6 +803,7 @@
             automaScore: 0,
             automaCollection: [],
             benchmarkObjective: 'processing_guru',
+            feeder: [],
             resources: { silicon: 2, power: 1, cooling: 1, paste: 1 },
             playerBoard: {
                 processing: [null, null, null, null, null],
@@ -772,6 +826,29 @@
             return array;
         }
 
+        function rollFeeder(count = 5) {
+            const cubes = [];
+            for (let i = 0; i < count; i++) {
+                const r = RESOURCE_TYPES[Math.floor(Math.random() * RESOURCE_TYPES.length)];
+                cubes.push(r);
+            }
+            return cubes;
+        }
+
+        function checkFeederAutoReroll() {
+            if (gameState.feeder.length === 0) {
+                gameState.feeder = rollFeeder(5);
+                setMessage("Feeder Tray was empty! Rolled 5 new resource cubes.");
+            } else {
+                const firstType = gameState.feeder[0];
+                const allSame = gameState.feeder.every(c => c === firstType);
+                if (allSame) {
+                    gameState.feeder = rollFeeder(5);
+                    setMessage("All cubes in feeder tray were identical! Rerolled feeder tray.");
+                }
+            }
+        }
+
         function cloneCard(card) {
             if (!card) return null;
             return { ...card, pasteCount: card.pasteCount || 0, tuckedCount: card.tuckedCount || 0 };
@@ -782,6 +859,7 @@
 
             const hand = [shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop()];
             const market = [shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop()];
+            const feeder = rollFeeder(5);
 
             gameState = {
                 round: 1,
@@ -791,6 +869,7 @@
                 automaScore: 0,
                 automaCollection: [],
                 benchmarkObjective: benchmarkObj,
+                feeder: feeder,
                 resources: { silicon: 2, power: 1, cooling: 1, paste: 1 },
                 playerBoard: {
                     processing: [null, null, null, null, null],
@@ -843,8 +922,9 @@
             const installedParts = gameState.playerBoard[habitat].filter(c => c !== null);
 
             if (habitat === 'processing') {
-                // Action: Procurement (Gain Resource)
-                document.getElementById('resource-modal').style.display = 'flex';
+                // Action: Procurement (Take from Feeder)
+                checkFeederAutoReroll();
+                openResourceFeederModal();
             } else if (habitat === 'memory') {
                 // Action: Overclock / Thermal Paste
                 if (installedParts.length === 0) {
@@ -876,10 +956,32 @@
             }
         }
 
-        function confirmGainResource(type) {
+        function openResourceFeederModal() {
+            const container = document.getElementById('resource-feeder-options');
+            container.innerHTML = '';
+
+            gameState.feeder.forEach((resType, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-primary';
+                btn.style.width = 'auto';
+                btn.style.margin = '0';
+
+                const labels = { silicon: '💎 Silicon', power: '⚡ Power', cooling: '❄️ Cooling' };
+                btn.textContent = labels[resType] || resType;
+
+                btn.onclick = () => confirmTakeFromFeeder(idx);
+                container.appendChild(btn);
+            });
+
+            document.getElementById('resource-modal').style.display = 'flex';
+        }
+
+        function confirmTakeFromFeeder(index) {
             closeModal('resource-modal');
-            gameState.resources[type] = (gameState.resources[type] || 0) + 1;
-            setMessage(`Procured 1 ${type.toUpperCase()} resource.`);
+            const taken = gameState.feeder.splice(index, 1)[0];
+            gameState.resources[taken] = (gameState.resources[taken] || 0) + 1;
+
+            setMessage(`Procured 1 ${taken.toUpperCase()} from Feeder Tray.`);
             triggerHabitatActivationPowers('processing');
             endPlayerTurn();
         }
@@ -1134,6 +1236,18 @@
             document.getElementById('automa-level-val').textContent = gameState.automaLevel.toUpperCase();
             document.getElementById('automa-score-val').textContent = gameState.automaScore;
 
+            // Render Feeder Tray Cubes
+            const feederContainer = document.getElementById('feeder-cubes-container');
+            feederContainer.innerHTML = '';
+
+            const icons = { silicon: '💎 Silicon', power: '⚡ Power', cooling: '❄️ Cooling' };
+            gameState.feeder.forEach(cube => {
+                const el = document.createElement('div');
+                el.className = 'feeder-cube';
+                el.textContent = icons[cube] || cube;
+                feederContainer.appendChild(el);
+            });
+
             // Resources
             document.getElementById('res-silicon').textContent = gameState.resources.silicon || 0;
             document.getElementById('res-power').textContent = gameState.resources.power || 0;
@@ -1309,6 +1423,13 @@
 
         // BINDINGS & INIT
         document.getElementById('install-btn').onclick = openInstallModal;
+        document.getElementById('reroll-feeder-btn').onclick = () => {
+            gameState.feeder = rollFeeder(5);
+            setMessage("Rerolled feeder tray with 5 new resource cubes.");
+            updateUI();
+            saveStateToUrl();
+        };
+
         document.getElementById('refresh-market-btn').onclick = () => {
             if (gameState.deck.length >= 3) {
                 gameState.market = [gameState.deck.pop(), gameState.deck.pop(), gameState.deck.pop()];
