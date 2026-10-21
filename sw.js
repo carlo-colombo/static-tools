@@ -8,6 +8,8 @@ const ASSETS = [
   './the-mind/index.html',
   './mint-works/',
   './mint-works/index.html',
+  './pcparts/',
+  './pcparts/index.html',
   './split-flap/',
   './split-flap/index.html',
   './manifest.json',

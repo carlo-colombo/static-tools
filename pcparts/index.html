@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pcparts - Rig Builder Solo Game</title>
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --card-bg: #334155;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-purple: #c084fc;
+            --accent-amber: #fbbf24;
+            --accent-rose: #f43f5e;
+
+            --processing-color: #ef4444;
+            --memory-color: #3b82f6;
+            --chassis-color: #10b981;
+
+            --silicon-color: #38bdf8;
+            --power-color: #fbbf24;
+            --cooling-color: #a855f7;
+            --paste-color: #ec4899;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            padding: 12px 20px;
+            background-color: var(--panel-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 10;
+        }
+
+        .home-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .title-container h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            color: #f1f5f9;
+            text-transform: uppercase;
+            font-weight: 800;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 1100px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Top Status Bar */
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            background: var(--panel-bg);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .status-box {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .status-label {
+            font-size: 0.7rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+        }
+
+        .status-val {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        /* Resource Inventory Bar */
+        .resource-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            background: var(--panel-bg);
+            padding: 10px 15px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            gap: 15px;
+        }
+
+        .resource-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Action Message Log */
+        #log-box {
+            background: rgba(30, 41, 59, 0.8);
+            border-left: 4px solid var(--accent-blue);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            color: #e2e8f0;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Habitats Grid */
+        .habitats-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .habitat-row {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            padding: 12px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .habitat-row.processing { border-color: rgba(239, 68, 68, 0.4); }
+        .habitat-row.memory { border-color: rgba(59, 130, 246, 0.4); }
+        .habitat-row.chassis { border-color: rgba(16, 185, 129, 0.4); }
+
+        .habitat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .habitat-title {
+            font-size: 1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .habitat-action-btn {
+            background: linear-gradient(135deg, #38bdf8, #2563eb);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .habitat-action-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .habitat-action-btn:disabled {
+            background: #475569;
+            color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        /* Card Component Styling */
+        .card-slot {
+            aspect-ratio: 2.5 / 3.5;
+            min-width: 130px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px dashed #475569;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .card-slot.installed {
+            border-style: solid;
+            background: var(--card-bg);
+            border-color: #64748b;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.4);
+            justify-content: space-between;
+        }
+
+        .card-slot.empty-cost-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            font-size: 0.68rem;
+            background: rgba(236, 72, 153, 0.2);
+            color: var(--paste-color);
+            padding: 2px 6px;
+            border-radius: 10px;
+            border: 1px solid rgba(236, 72, 153, 0.4);
+            font-weight: bold;
+        }
+
+        .card-header-row {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .card-name {
+            font-size: 0.78rem;
+            font-weight: bold;
+            line-height: 1.1;
+            color: #f8fafc;
+        }
+
+        .card-vp {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--accent-amber);
+            background: rgba(251, 191, 36, 0.15);
+            padding: 2px 5px;
+            border-radius: 4px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .card-cost-list {
+            font-size: 0.68rem;
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .card-effect-desc {
+            font-size: 0.65rem;
+            color: #cbd5e1;
+            line-height: 1.2;
+            margin: 4px 0;
+            background: rgba(0,0,0,0.2);
+            padding: 4px;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .card-tokens-row {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.68rem;
+            font-weight: bold;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 4px;
+            margin-top: 2px;
+        }
+
+        /* Display Market & Hand Sections */
+        .section-panel {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #334155;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cards-row {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: var(--panel-bg);
+            border: 2px solid var(--accent-blue);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+            text-align: center;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--accent-blue);
+            font-size: 1.3rem;
+        }
+
+        .option-group {
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .option-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        select, button.btn-action {
+            width: 100%;
+            padding: 10px;
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        button.btn-primary {
+            background: linear-gradient(135deg, #38bdf8, #2563eb);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: opacity 0.2s;
+        }
+
+        button.btn-primary:hover { opacity: 0.9; }
+
+        /* Scoring Table */
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+
+        .score-table th, .score-table td {
+            padding: 8px;
+            border-bottom: 1px solid #334155;
+            text-align: left;
+        }
+
+        .score-table th { color: var(--accent-blue); }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .slots-grid {
+                grid-template-columns: repeat(5, minmax(110px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="../" class="home-link">← Hub</a>
+        <div class="title-container">
+            <h1>PC PARTS</h1>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-sub); font-weight: bold;">
+            SOLO RIG BUILDER
+        </div>
+    </header>
+
+    <div id="game-container">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-box">
+                <div class="status-label">Round</div>
+                <div class="status-val" id="round-val">1 / 4</div>
+            </div>
+            <div class="status-box">
+                <div class="status-label">Turns Left</div>
+                <div class="status-val" id="turns-val" style="color: var(--accent-blue);">8</div>
+            </div>
+            <div class="status-box">
+                <div class="status-label">Current Goal</div>
+                <div class="status-val" id="goal-val" style="font-size: 0.85rem; color: var(--accent-amber);">Processing Parts</div>
+            </div>
+            <div class="status-box">
+                <div class="status-label">Automa Level</div>
+                <div class="status-val" id="automa-level-val" style="font-size: 0.9rem; color: var(--accent-purple);">Mid-Range Rig</div>
+            </div>
+            <div class="status-box">
+                <div class="status-label">Automa Score</div>
+                <div class="status-val" id="automa-score-val" style="color: var(--accent-rose);">0</div>
+            </div>
+        </div>
+
+        <!-- Resource Inventory -->
+        <div class="resource-bar">
+            <div class="resource-pill" style="color: var(--silicon-color);">
+                <span>💎 Silicon:</span> <span id="res-silicon">2</span>
+            </div>
+            <div class="resource-pill" style="color: var(--power-color);">
+                <span>⚡ Power:</span> <span id="res-power">1</span>
+            </div>
+            <div class="resource-pill" style="color: var(--cooling-color);">
+                <span>❄️ Cooling:</span> <span id="res-cooling">1</span>
+            </div>
+            <div class="resource-pill" style="color: var(--paste-color);">
+                <span>🧪 Paste:</span> <span id="res-paste">1</span>
+            </div>
+            <div class="resource-pill" style="color: var(--accent-green);">
+                <span>🃏 Cards:</span> <span id="res-hand-count">5</span>
+            </div>
+            <button id="install-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer;">
+                🛠️ Install Part
+            </button>
+        </div>
+
+        <!-- Log Message -->
+        <div id="log-box">
+            Welcome to PC Parts! Select an action or install a component card.
+        </div>
+
+        <!-- Habitats -->
+        <div class="habitats-container">
+            <!-- Processing Habitat -->
+            <div class="habitat-row processing">
+                <div class="habitat-header">
+                    <div class="habitat-title" style="color: #f87171;">
+                        ⚡ Processing Habitat (CPUs & GPUs)
+                    </div>
+                    <button class="habitat-action-btn" id="proc-action-btn" onclick="executeHabitatAction('processing')">
+                        Procure Resources (+1 💎/⚡/❄️)
+                    </button>
+                </div>
+                <div class="slots-grid" id="processing-slots">
+                    <!-- Slots 0..4 injected dynamically -->
+                </div>
+            </div>
+
+            <!-- Memory & Storage Habitat -->
+            <div class="habitat-row memory">
+                <div class="habitat-header">
+                    <div class="habitat-title" style="color: #60a5fa;">
+                        💾 Memory & Storage Habitat (RAM & SSDs)
+                    </div>
+                    <button class="habitat-action-btn" id="mem-action-btn" onclick="executeHabitatAction('memory')">
+                        Overclock / Apply Paste (+1 🧪)
+                    </button>
+                </div>
+                <div class="slots-grid" id="memory-slots">
+                    <!-- Slots 0..4 injected dynamically -->
+                </div>
+            </div>
+
+            <!-- Chassis & Cooling Habitat -->
+            <div class="habitat-row chassis">
+                <div class="habitat-header">
+                    <div class="habitat-title" style="color: #34d399;">
+                        🖥️ Chassis & Cooling Habitat (Cases, PSUs, Coolers)
+                    </div>
+                    <button class="habitat-action-btn" id="chassis-action-btn" onclick="executeHabitatAction('chassis')">
+                        Download Drivers (Draw Card)
+                    </button>
+                </div>
+                <div class="slots-grid" id="chassis-slots">
+                    <!-- Slots 0..4 injected dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Component Market Display -->
+        <div class="section-panel">
+            <div class="section-title">
+                <span>🛒 Component Market Display (<span id="deck-count-val">40</span> remaining in supply)</span>
+                <button id="refresh-market-btn" style="background: transparent; color: var(--accent-blue); border: 1px solid var(--accent-blue); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
+                    Reset Market
+                </button>
+            </div>
+            <div class="cards-row" id="market-display-row">
+                <!-- Market cards injected -->
+            </div>
+        </div>
+
+        <!-- Hand Display -->
+        <div class="section-panel">
+            <div class="section-title">
+                <span>🎒 Your Component Hand</span>
+            </div>
+            <div class="cards-row" id="hand-cards-row">
+                <!-- Hand cards injected -->
+            </div>
+        </div>
+
+        <!-- End of Round Goals & Benchmark Card summary -->
+        <div class="section-panel">
+            <div class="section-title">
+                <span>🏆 Benchmark Bonus & Round Objectives</span>
+            </div>
+            <div id="benchmark-summary" style="font-size: 0.88rem; color: var(--text-sub); line-height: 1.5;">
+                <!-- Summary injected -->
+            </div>
+        </div>
+
+        <div id="leaderboard-container" class="section-panel" style="text-align: center;">
+            <div class="section-title" style="justify-content: center;">Top Benchmark Scores</div>
+            <table class="score-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player Score</th>
+                        <th>Automa Score</th>
+                        <th>Outcome</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <tr><td colspan="5">No scores saved yet. Complete a rig benchmark!</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Game Setup Modal -->
+    <div id="setup-modal" class="modal">
+        <div class="modal-content">
+            <h2>PC PARTS SETUP</h2>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Configure your solo benchmark session against the Automa AI.</p>
+
+            <div class="option-group">
+                <label for="automa-select">Automa AI Difficulty:</label>
+                <select id="automa-select">
+                    <option value="easy">Entry-Level Rig (Easy - Automa VP Multiplier 0.8x)</option>
+                    <option value="normal" selected>Mid-Range Rig (Normal - Automa VP Multiplier 1.0x)</option>
+                    <option value="hard">High-End Workstation (Hard - Automa VP Multiplier 1.25x)</option>
+                    <option value="expert">Overclocked Supercomputer (Expert - Automa VP Multiplier 1.5x)</option>
+                </select>
+            </div>
+
+            <div class="option-group">
+                <label for="benchmark-card-select">Secret Benchmark Objective:</label>
+                <select id="benchmark-card-select">
+                    <option value="processing_guru">Processing Power: +2 VP per Processing Part installed</option>
+                    <option value="storage_beast">Storage Architect: +3 VP per Part with Tucked Data Cards</option>
+                    <option value="thermal_king">Liquid Cooled: +2 VP per Thermal Paste placed</option>
+                    <option value="efficiency_master">Eco Build: +3 VP for each Part costing 1 or fewer resources</option>
+                </select>
+            </div>
+
+            <button class="btn-primary" id="start-game-btn">Start Session</button>
+        </div>
+    </div>
+
+    <!-- Card Install Modal -->
+    <div id="install-modal" class="modal">
+        <div class="modal-content">
+            <h2>INSTALL COMPONENT</h2>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Select a component card from your hand and target habitat slot.</p>
+            <div id="install-options-container" style="display: flex; flex-direction: column; gap: 10px; margin: 15px 0;">
+                <!-- Installed choices -->
+            </div>
+            <button class="btn-action" style="background: #475569;" onclick="closeModal('install-modal')">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Resource Selection Modal -->
+    <div id="resource-modal" class="modal">
+        <div class="modal-content">
+            <h2>SELECT RESOURCE</h2>
+            <p style="font-size: 0.85rem; color: var(--text-sub);">Choose a resource to gain from Procurement action:</p>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0;">
+                <button class="btn-primary" style="background: var(--silicon-color); color: #000;" onclick="confirmGainResource('silicon')">💎 Silicon</button>
+                <button class="btn-primary" style="background: var(--power-color); color: #000;" onclick="confirmGainResource('power')">⚡ Power</button>
+                <button class="btn-primary" style="background: var(--cooling-color); color: #fff;" onclick="confirmGainResource('cooling')">❄️ Cooling</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="go-title">BENCHMARK COMPLETE</h2>
+            <p id="go-msg" style="font-size: 0.95rem; line-height: 1.4; color: var(--text-sub);"></p>
+
+            <div style="background: rgba(15,23,42,0.8); border-radius: 10px; padding: 12px; margin: 15px 0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-weight: bold;">
+                    <span>Your Total Score:</span> <span id="final-player-score" style="color: var(--accent-green); font-size: 1.2rem;">0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                    <span>Automa Score:</span> <span id="final-automa-score" style="color: var(--accent-rose); font-size: 1.2rem;">0</span>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="play-again-btn">New Benchmark Session</button>
+        </div>
+    </div>
+
+    <script>
+        // COMPONENT CARD DATASET (40 unique PC Parts)
+        const COMPONENT_DECK = [
+            // Processing Habitat Parts
+            { id: 'cpu_ryzen9', name: 'Ryzen 9 7950X', habitat: 'processing', cost: { silicon: 2, power: 1 }, vp: 8, powerType: 'installed', effect: 'When Installed: Gain +1 Silicon 💎 and +1 Power ⚡.' },
+            { id: 'cpu_i9_14900k', name: 'Core i9-14900K', habitat: 'processing', cost: { silicon: 2, power: 2 }, vp: 9, powerType: 'activated', effect: 'When Activated: Gain +1 Power ⚡.' },
+            { id: 'gpu_rtx_4090', name: 'GeForce RTX 4090', habitat: 'processing', cost: { silicon: 3, power: 2 }, vp: 12, powerType: 'installed', effect: 'When Installed: Draw 2 Component Cards.' },
+            { id: 'gpu_rx_7900xtx', name: 'Radeon RX 7900 XTX', habitat: 'processing', cost: { silicon: 2, cooling: 1 }, vp: 7, powerType: 'activated', effect: 'When Activated: Tuck 1 card under this part to gain 1 🧪 Paste.' },
+            { id: 'cpu_ryzen7_7800x3d', name: 'Ryzen 7 7800X3D', habitat: 'processing', cost: { silicon: 2 }, vp: 6, powerType: 'activated', effect: 'When Activated: Gain +1 Silicon 💎.' },
+            { id: 'gpu_rtx_4070ti', name: 'GeForce RTX 4070 Ti', habitat: 'processing', cost: { silicon: 2, power: 1 }, vp: 7, powerType: 'installed', effect: 'When Installed: Gain +1 Thermal Paste 🧪.' },
+            { id: 'cpu_i7_13700k', name: 'Core i7-13700K', habitat: 'processing', cost: { silicon: 1, power: 1 }, vp: 5, powerType: 'activated', effect: 'When Activated: Gain +1 Cooling ❄️.' },
+            { id: 'gpu_rx_7800xt', name: 'Radeon RX 7800 XT', habitat: 'processing', cost: { silicon: 1, power: 1 }, vp: 5, powerType: 'installed', effect: 'When Installed: Gain +1 Silicon 💎.' },
+            { id: 'npu_ai_accelerator', name: 'Tensor NPU Accelerator', habitat: 'processing', cost: { silicon: 2, cooling: 1 }, vp: 8, powerType: 'activated', effect: 'When Activated: Draw 1 card from Market.' },
+            { id: 'cpu_threadripper', name: 'Threadripper PRO 7995WX', habitat: 'processing', cost: { silicon: 3, power: 2, cooling: 1 }, vp: 14, powerType: 'installed', effect: 'When Installed: Gain +2 Thermal Paste 🧪.' },
+            { id: 'gpu_rtx_4060', name: 'GeForce RTX 4060', habitat: 'processing', cost: { silicon: 1 }, vp: 4, powerType: 'activated', effect: 'When Activated: Gain +1 Power ⚡.' },
+            { id: 'cpu_ryzen5_7600x', name: 'Ryzen 5 7600X', habitat: 'processing', cost: { silicon: 1 }, vp: 4, powerType: 'installed', effect: 'When Installed: Draw 1 Component Card.' },
+            { id: 'gpu_arc_a770', name: 'Intel Arc A770', habitat: 'processing', cost: { silicon: 1, cooling: 1 }, vp: 5, powerType: 'activated', effect: 'When Activated: Tuck 1 card under this part.' },
+
+            // Memory & Storage Habitat Parts
+            { id: 'ram_ddr5_64gb', name: 'Trident Z5 DDR5 64GB', habitat: 'memory', cost: { silicon: 2 }, vp: 6, powerType: 'activated', effect: 'When Activated: Apply +1 Thermal Paste 🧪.' },
+            { id: 'ssd_gen5_nvme_4tb', name: 'Crucial T700 Gen5 4TB SSD', habitat: 'memory', cost: { silicon: 2, cooling: 1 }, vp: 8, powerType: 'activated', effect: 'When Activated: Tuck up to 2 cards under this SSD.' },
+            { id: 'ram_ddr5_32gb', name: 'Vengeance DDR5 32GB', habitat: 'memory', cost: { silicon: 1 }, vp: 4, powerType: 'installed', effect: 'When Installed: Gain +1 Thermal Paste 🧪.' },
+            { id: 'ssd_gen4_2tb', name: 'Samsung 990 PRO 2TB', habitat: 'memory', cost: { silicon: 1, cooling: 1 }, vp: 5, powerType: 'activated', effect: 'When Activated: Tuck 1 card under this SSD.' },
+            { id: 'raid_controller', name: 'Hardware RAID Array', habitat: 'memory', cost: { silicon: 2, power: 1 }, vp: 7, powerType: 'installed', effect: 'When Installed: Tuck 2 cards from deck under this part.' },
+            { id: 'ssd_sata_4tb', name: 'MX500 SATA SSD 4TB', habitat: 'memory', cost: { silicon: 1 }, vp: 3, powerType: 'activated', effect: 'When Activated: Gain +1 Silicon 💎.' },
+            { id: 'ram_ecc_server_128gb', name: 'Server ECC Registered RAM', habitat: 'memory', cost: { silicon: 2, power: 1 }, vp: 7, powerType: 'activated', effect: 'When Activated: Apply +1 Thermal Paste 🧪.' },
+            { id: 'optane_cache', name: 'Optane High-Speed Cache', habitat: 'memory', cost: { silicon: 1 }, vp: 4, powerType: 'installed', effect: 'When Installed: Draw 1 card and gain +1 Paste 🧪.' },
+            { id: 'ssd_nvme_1tb', name: 'SN850X NVMe 1TB', habitat: 'memory', cost: { silicon: 1 }, vp: 4, powerType: 'activated', effect: 'When Activated: Tuck 1 card under this SSD.' },
+            { id: 'nas_storage_16tb', name: 'IronWolf Pro 16TB HDD', habitat: 'memory', cost: { power: 1 }, vp: 3, powerType: 'activated', effect: 'When Activated: Tuck 1 card from hand.' },
+            { id: 'ram_rgb_16gb', name: 'Dominator RGB DDR5 16GB', habitat: 'memory', cost: { silicon: 1 }, vp: 3, powerType: 'installed', effect: 'When Installed: Gain +1 Power ⚡.' },
+            { id: 'usb_c_hub', name: 'High-Speed USB 4 Expansion', habitat: 'memory', cost: { power: 1 }, vp: 2, powerType: 'activated', effect: 'When Activated: Draw 1 card.' },
+
+            // Chassis & Cooling Habitat Parts
+            { id: 'aio_360mm_cooler', name: 'Kraken Elite 360 RGB AIO', habitat: 'chassis', cost: { cooling: 2, power: 1 }, vp: 7, powerType: 'activated', effect: 'When Activated: Draw 1 Component Card.' },
+            { id: 'psu_1200w_platinum', name: 'AX1200i Platinum PSU', habitat: 'chassis', cost: { power: 2 }, vp: 6, powerType: 'installed', effect: 'When Installed: Gain +2 Power ⚡.' },
+            { id: 'case_full_tower', name: 'O11 Dynamic EVO XL Case', habitat: 'chassis', cost: { cooling: 1, power: 1 }, vp: 5, powerType: 'activated', effect: 'When Activated: Gain +1 Cooling ❄️.' },
+            { id: 'cooler_custom_loop', name: 'Custom Liquid Cooling Loop', habitat: 'chassis', cost: { cooling: 3 }, vp: 9, powerType: 'installed', effect: 'When Installed: Apply +2 Thermal Paste 🧪.' },
+            { id: 'psu_850w_gold', name: 'RM850x 80+ Gold PSU', habitat: 'chassis', cost: { power: 1 }, vp: 4, powerType: 'installed', effect: 'When Installed: Gain +1 Power ⚡.' },
+            { id: 'case_mid_tower', name: '4000D Airflow Case', habitat: 'chassis', cost: { cooling: 1 }, vp: 3, powerType: 'activated', effect: 'When Activated: Draw 1 Component Card.' },
+            { id: 'cooler_noctua_nhd15', name: 'Noctua NH-D15 Air Cooler', habitat: 'chassis', cost: { cooling: 2 }, vp: 6, powerType: 'installed', effect: 'When Installed: Gain +1 Cooling ❄️ and +1 Paste 🧪.' },
+            { id: 'fans_rgb_pack', name: 'LL120 RGB Fan 3-Pack', habitat: 'chassis', cost: { cooling: 1, power: 1 }, vp: 4, powerType: 'activated', effect: 'When Activated: Gain +1 Cooling ❄️.' },
+            { id: 'psu_1500w_titanium', name: 'Dark Power Pro 13 1500W', habitat: 'chassis', cost: { power: 3 }, vp: 10, powerType: 'installed', effect: 'When Installed: Gain +2 Power ⚡.' },
+            { id: 'case_itx_sff', name: 'FormD T1 ITX SFF Case', habitat: 'chassis', cost: { cooling: 1 }, vp: 4, powerType: 'activated', effect: 'When Activated: Draw 1 card.' },
+            { id: 'cooler_240mm_aio', name: 'DeepCool LT520 240mm', habitat: 'chassis', cost: { cooling: 1 }, vp: 4, powerType: 'installed', effect: 'When Installed: Gain +1 Cooling ❄️.' },
+            { id: 'fan_controller', name: 'Commander PRO Fan Hub', habitat: 'chassis', cost: { power: 1 }, vp: 2, powerType: 'activated', effect: 'When Activated: Gain +1 Cooling ❄️.' },
+            { id: 'sleeved_cables', name: 'Custom Braided Cable Set', habitat: 'chassis', cost: { power: 1 }, vp: 3, powerType: 'installed', effect: 'When Installed: Gain +1 Thermal Paste 🧪.' }
+        ];
+
+        // ROUND GOALS
+        const ROUND_GOALS = [
+            { id: 'processing_count', title: 'Processing Parts Installed', check: (state) => state.playerBoard.processing.filter(c => c).length },
+            { id: 'thermal_paste', title: 'Thermal Paste Placed', check: (state) => countTotalPaste(state.playerBoard) },
+            { id: 'tucked_cards', title: 'Tucked Data Cards', check: (state) => countTotalTucked(state.playerBoard) },
+            { id: 'total_installed', title: 'Total Components Installed', check: (state) => countTotalParts(state.playerBoard) }
+        ];
+
+        // GAME STATE
+        let gameState = {
+            round: 1,
+            turnsInRound: 8,
+            currentTurn: 1,
+            automaLevel: 'normal',
+            automaScore: 0,
+            automaCollection: [],
+            benchmarkObjective: 'processing_guru',
+            resources: { silicon: 2, power: 1, cooling: 1, paste: 1 },
+            playerBoard: {
+                processing: [null, null, null, null, null],
+                memory: [null, null, null, null, null],
+                chassis: [null, null, null, null, null]
+            },
+            deck: [],
+            market: [],
+            hand: [],
+            gameOver: false,
+            message: "Welcome! Choose an action to begin your build."
+        };
+
+        function shuffle(arr) {
+            const array = [...arr];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function cloneCard(card) {
+            if (!card) return null;
+            return { ...card, pasteCount: card.pasteCount || 0, tuckedCount: card.tuckedCount || 0 };
+        }
+
+        function initGame(automaLevel = 'normal', benchmarkObj = 'processing_guru') {
+            const shuffledDeck = shuffle(COMPONENT_DECK).map(cloneCard);
+
+            const hand = [shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop()];
+            const market = [shuffledDeck.pop(), shuffledDeck.pop(), shuffledDeck.pop()];
+
+            gameState = {
+                round: 1,
+                turnsInRound: 8,
+                currentTurn: 1,
+                automaLevel: automaLevel,
+                automaScore: 0,
+                automaCollection: [],
+                benchmarkObjective: benchmarkObj,
+                resources: { silicon: 2, power: 1, cooling: 1, paste: 1 },
+                playerBoard: {
+                    processing: [null, null, null, null, null],
+                    memory: [null, null, null, null, null],
+                    chassis: [null, null, null, null, null]
+                },
+                deck: shuffledDeck,
+                market: market,
+                hand: hand,
+                gameOver: false,
+                message: "Session started. Select a habitat action or install a component card."
+            };
+
+            updateUI();
+            saveStateToUrl();
+            renderLeaderboard();
+        }
+
+        function countTotalParts(board) {
+            let total = 0;
+            ['processing', 'memory', 'chassis'].forEach(h => {
+                total += board[h].filter(c => c !== null).length;
+            });
+            return total;
+        }
+
+        function countTotalPaste(board) {
+            let paste = 0;
+            ['processing', 'memory', 'chassis'].forEach(h => {
+                board[h].forEach(c => {
+                    if (c) paste += (c.pasteCount || 0);
+                });
+            });
+            return paste;
+        }
+
+        function countTotalTucked(board) {
+            let tucked = 0;
+            ['processing', 'memory', 'chassis'].forEach(h => {
+                board[h].forEach(c => {
+                    if (c) tucked += (c.tuckedCount || 0);
+                });
+            });
+            return tucked;
+        }
+
+        function executeHabitatAction(habitat) {
+            if (gameState.gameOver || gameState.currentTurn > gameState.turnsInRound) return;
+
+            const installedParts = gameState.playerBoard[habitat].filter(c => c !== null);
+
+            if (habitat === 'processing') {
+                // Action: Procurement (Gain Resource)
+                document.getElementById('resource-modal').style.display = 'flex';
+            } else if (habitat === 'memory') {
+                // Action: Overclock / Thermal Paste
+                if (installedParts.length === 0) {
+                    setMessage("Need at least 1 installed Memory/Storage part to apply Thermal Paste!");
+                    return;
+                }
+                // Apply 1 Paste to first available part
+                installedParts[0].pasteCount = (installedParts[0].pasteCount || 0) + 1;
+                setMessage(`Applied Thermal Paste 🧪 to ${installedParts[0].name}.`);
+                triggerHabitatActivationPowers('memory');
+                endPlayerTurn();
+            } else if (habitat === 'chassis') {
+                // Action: Download Drivers (Draw Card)
+                if (gameState.market.length > 0) {
+                    const card = gameState.market.shift();
+                    gameState.hand.push(card);
+                    if (gameState.deck.length > 0) gameState.market.push(gameState.deck.pop());
+                    setMessage(`Downloaded Driver: Added ${card.name} to hand.`);
+                } else if (gameState.deck.length > 0) {
+                    const card = gameState.deck.pop();
+                    gameState.hand.push(card);
+                    setMessage(`Downloaded Driver: Drew ${card.name} from deck.`);
+                } else {
+                    setMessage("No cards left in market or deck!");
+                    return;
+                }
+                triggerHabitatActivationPowers('chassis');
+                endPlayerTurn();
+            }
+        }
+
+        function confirmGainResource(type) {
+            closeModal('resource-modal');
+            gameState.resources[type] = (gameState.resources[type] || 0) + 1;
+            setMessage(`Procured 1 ${type.toUpperCase()} resource.`);
+            triggerHabitatActivationPowers('processing');
+            endPlayerTurn();
+        }
+
+        function triggerHabitatActivationPowers(habitat) {
+            // Trigger powers on activated cards in habitat
+            gameState.playerBoard[habitat].forEach(card => {
+                if (card && card.powerType === 'activated') {
+                    if (card.id === 'cpu_i9_14900k' || card.id === 'gpu_rtx_4060') {
+                        gameState.resources.power += 1;
+                    } else if (card.id === 'cpu_ryzen7_7800x3d' || card.id === 'ssd_sata_4tb') {
+                        gameState.resources.silicon += 1;
+                    } else if (card.id === 'cpu_i7_13700k' || card.id === 'case_full_tower' || card.id === 'fans_rgb_pack' || card.id === 'fan_controller') {
+                        gameState.resources.cooling += 1;
+                    } else if (card.id === 'ram_ddr5_64gb' || card.id === 'ram_ecc_server_128gb') {
+                        card.pasteCount = (card.pasteCount || 0) + 1;
+                    } else if (card.id === 'ssd_gen5_nvme_4tb' || card.id === 'ssd_gen4_2tb' || card.id === 'ssd_nvme_1tb') {
+                        if (gameState.hand.length > 0) {
+                            gameState.hand.pop(); // Tuck card from hand
+                            card.tuckedCount = (card.tuckedCount || 0) + 1;
+                        }
+                    } else if (card.id === 'aio_360mm_cooler' || card.id === 'case_mid_tower' || card.id === 'case_itx_sff') {
+                        if (gameState.deck.length > 0) gameState.hand.push(gameState.deck.pop());
+                    }
+                }
+            });
+        }
+
+        function openInstallModal() {
+            if (gameState.gameOver || gameState.currentTurn > gameState.turnsInRound) return;
+
+            const container = document.getElementById('install-options-container');
+            container.innerHTML = '';
+
+            if (gameState.hand.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-sub);">No component cards in hand to install.</div>';
+            } else {
+                gameState.hand.forEach((card, handIdx) => {
+                    const row = document.createElement('div');
+                    row.style.background = 'rgba(15,23,42,0.8)';
+                    row.style.padding = '10px';
+                    row.style.borderRadius = '8px';
+                    row.style.display = 'flex';
+                    row.style.justifySpaceBetween = 'space-between';
+                    row.style.alignItems = 'center';
+
+                    // Check slot availability and slot paste cost in habitat
+                    const slots = gameState.playerBoard[card.habitat];
+                    const nextSlotIdx = slots.findIndex(s => s === null);
+
+                    let pasteSlotCost = 0;
+                    if (nextSlotIdx === 1 || nextSlotIdx === 2) pasteSlotCost = 1;
+                    if (nextSlotIdx === 3 || nextSlotIdx === 4) pasteSlotCost = 2;
+
+                    // Check resource cost
+                    let canAffordResources = true;
+                    if (card.cost.silicon && (gameState.resources.silicon || 0) < card.cost.silicon) canAffordResources = false;
+                    if (card.cost.power && (gameState.resources.power || 0) < card.cost.power) canAffordResources = false;
+                    if (card.cost.cooling && (gameState.resources.cooling || 0) < card.cost.cooling) canAffordResources = false;
+                    if ((gameState.resources.paste || 0) < pasteSlotCost) canAffordResources = false;
+
+                    const isAvailable = nextSlotIdx !== -1 && canAffordResources;
+
+                    let costStr = Object.entries(card.cost).map(([k,v]) => `${v} ${k.toUpperCase()}`).join(', ');
+                    if (pasteSlotCost > 0) costStr += ` + ${pasteSlotCost} 🧪 Slot Cost`;
+
+                    row.innerHTML = `
+                        <div style="text-align: left;">
+                            <div style="font-weight: bold; color: var(--text-main);">${card.name} (${card.vp} VP)</div>
+                            <div style="font-size: 0.75rem; color: var(--text-sub);">Habitat: ${card.habitat.toUpperCase()} | Cost: ${costStr}</div>
+                        </div>
+                        <button class="btn-action" style="width: auto; padding: 6px 12px; background: ${isAvailable ? 'var(--accent-blue)' : '#475569'}; color: white;" ${!isAvailable ? 'disabled' : ''} onclick="confirmInstallCard(${handIdx}, ${nextSlotIdx})">
+                            ${nextSlotIdx === -1 ? 'Habitat Full' : (!canAffordResources ? 'Cannot Afford' : 'Install')}
+                        </button>
+                    `;
+                    container.appendChild(row);
+                });
+            }
+
+            document.getElementById('install-modal').style.display = 'flex';
+        }
+
+        function confirmInstallCard(handIdx, slotIdx) {
+            closeModal('install-modal');
+
+            const card = gameState.hand.splice(handIdx, 1)[0];
+
+            let pasteSlotCost = 0;
+            if (slotIdx === 1 || slotIdx === 2) pasteSlotCost = 1;
+            if (slotIdx === 3 || slotIdx === 4) pasteSlotCost = 2;
+
+            // Deduct costs
+            if (card.cost.silicon) gameState.resources.silicon -= card.cost.silicon;
+            if (card.cost.power) gameState.resources.power -= card.cost.power;
+            if (card.cost.cooling) gameState.resources.cooling -= card.cost.cooling;
+            gameState.resources.paste -= pasteSlotCost;
+
+            gameState.playerBoard[card.habitat][slotIdx] = card;
+
+            // Trigger "When Installed" powers
+            if (card.powerType === 'installed') {
+                if (card.id === 'cpu_ryzen9') {
+                    gameState.resources.silicon += 1;
+                    gameState.resources.power += 1;
+                } else if (card.id === 'gpu_rtx_4090') {
+                    if (gameState.deck.length > 0) gameState.hand.push(gameState.deck.pop());
+                    if (gameState.deck.length > 0) gameState.hand.push(gameState.deck.pop());
+                } else if (card.id === 'gpu_rtx_4070ti' || card.id === 'ram_ddr5_32gb' || card.id === 'sleeved_cables') {
+                    gameState.resources.paste += 1;
+                } else if (card.id === 'psu_1200w_platinum' || card.id === 'psu_1500w_titanium') {
+                    gameState.resources.power += 2;
+                } else if (card.id === 'cooler_custom_loop') {
+                    card.pasteCount = (card.pasteCount || 0) + 2;
+                }
+            }
+
+            setMessage(`Installed ${card.name} into ${card.habitat.toUpperCase()} habitat.`);
+            endPlayerTurn();
+        }
+
+        function endPlayerTurn() {
+            // Execute Automa AI turn
+            executeAutomaTurn();
+
+            gameState.currentTurn += 1;
+
+            if (gameState.currentTurn > gameState.turnsInRound) {
+                // End of round
+                if (gameState.round < 4) {
+                    gameState.round += 1;
+                    gameState.turnsInRound = [8, 7, 6, 5][gameState.round - 1];
+                    gameState.currentTurn = 1;
+
+                    // Score end-of-round goal
+                    const currentGoalObj = ROUND_GOALS[gameState.round - 2];
+                    const playerVal = currentGoalObj.check(gameState);
+                    const automaBonusVal = Math.floor(Math.random() * 3) + gameState.round;
+
+                    if (playerVal >= automaBonusVal) {
+                        gameState.resources.paste += 1;
+                        setMessage(`End of Round ${gameState.round - 1}: Won goal standard! (+1 Thermal Paste 🧪). Round ${gameState.round} begins.`);
+                    } else {
+                        setMessage(`End of Round ${gameState.round - 1} completed. Round ${gameState.round} begins.`);
+                    }
+                } else {
+                    // Game Over Scoring
+                    calculateFinalScores();
+                    return;
+                }
+            }
+
+            updateUI();
+            saveStateToUrl();
+        }
+
+        function executeAutomaTurn() {
+            // Automa decision simulation
+            const difficultyMult = { easy: 0.8, normal: 1.0, hard: 1.25, expert: 1.5 }[gameState.automaLevel];
+
+            const actionChoice = Math.floor(Math.random() * 3);
+            if (actionChoice === 0) {
+                // Automa steals top card from market & scores base VP
+                if (gameState.market.length > 0) {
+                    const card = gameState.market.shift();
+                    gameState.automaCollection.push(card);
+                    gameState.automaScore += Math.round((card.vp || 4) * difficultyMult);
+                    if (gameState.deck.length > 0) gameState.market.push(gameState.deck.pop());
+                }
+            } else if (actionChoice === 1) {
+                // Automa scores fixed VP
+                gameState.automaScore += Math.round(5 * difficultyMult);
+            } else {
+                // Automa draws from deck directly
+                if (gameState.deck.length > 0) {
+                    const card = gameState.deck.pop();
+                    gameState.automaCollection.push(card);
+                    gameState.automaScore += Math.round((card.vp || 5) * difficultyMult);
+                }
+            }
+        }
+
+        function calculateFinalScores() {
+            gameState.gameOver = true;
+
+            // Player Base Card VP
+            let playerBaseVP = 0;
+            ['processing', 'memory', 'chassis'].forEach(h => {
+                gameState.playerBoard[h].forEach(card => {
+                    if (card) playerBaseVP += card.vp;
+                });
+            });
+
+            // Paste VP
+            const totalPaste = countTotalPaste(gameState.playerBoard);
+
+            // Tucked Card VP
+            const totalTucked = countTotalTucked(gameState.playerBoard);
+
+            // Secret Benchmark Bonus VP
+            let benchmarkVP = 0;
+            if (gameState.benchmarkObjective === 'processing_guru') {
+                benchmarkVP = gameState.playerBoard.processing.filter(c => c !== null).length * 2;
+            } else if (gameState.benchmarkObjective === 'storage_beast') {
+                benchmarkVP = countTotalTucked(gameState.playerBoard) * 3;
+            } else if (gameState.benchmarkObjective === 'thermal_king') {
+                benchmarkVP = totalPaste * 2;
+            } else if (gameState.benchmarkObjective === 'efficiency_master') {
+                let lowCostCount = 0;
+                ['processing', 'memory', 'chassis'].forEach(h => {
+                    gameState.playerBoard[h].forEach(c => {
+                        if (c) {
+                            const totalResCost = Object.values(c.cost).reduce((a, b) => a + b, 0);
+                            if (totalResCost <= 1) lowCostCount++;
+                        }
+                    });
+                });
+                benchmarkVP = lowCostCount * 3;
+            }
+
+            const totalPlayerScore = playerBaseVP + totalPaste + totalTucked + benchmarkVP;
+            const totalAutomaScore = gameState.automaScore;
+
+            saveScore(totalPlayerScore > totalAutomaScore ? 'Win' : 'Loss', totalPlayerScore, totalAutomaScore);
+
+            document.getElementById('final-player-score').textContent = totalPlayerScore;
+            document.getElementById('final-automa-score').textContent = totalAutomaScore;
+
+            const goTitle = document.getElementById('go-title');
+            const goMsg = document.getElementById('go-msg');
+
+            if (totalPlayerScore > totalAutomaScore) {
+                goTitle.textContent = "BENCHMARK VICTORY!";
+                goTitle.style.color = "var(--accent-green)";
+                goMsg.textContent = `Your custom rig out-benchmarked the Automa ${gameState.automaLevel.toUpperCase()} AI!`;
+            } else {
+                goTitle.textContent = "BENCHMARK DEFEAT";
+                goTitle.style.color = "var(--accent-rose)";
+                goMsg.textContent = `The Automa ${gameState.automaLevel.toUpperCase()} AI beat your rig's benchmark score.`;
+            }
+
+            document.getElementById('game-over-modal').style.display = 'flex';
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('round-val').textContent = `${gameState.round} / 4`;
+            document.getElementById('turns-val').textContent = Math.max(0, gameState.turnsInRound - gameState.currentTurn + 1);
+
+            const currentGoal = ROUND_GOALS[gameState.round - 1];
+            document.getElementById('goal-val').textContent = currentGoal ? currentGoal.title : 'Final Scoring';
+
+            document.getElementById('automa-level-val').textContent = gameState.automaLevel.toUpperCase();
+            document.getElementById('automa-score-val').textContent = gameState.automaScore;
+
+            // Resources
+            document.getElementById('res-silicon').textContent = gameState.resources.silicon || 0;
+            document.getElementById('res-power').textContent = gameState.resources.power || 0;
+            document.getElementById('res-cooling').textContent = gameState.resources.cooling || 0;
+            document.getElementById('res-paste').textContent = gameState.resources.paste || 0;
+            document.getElementById('res-hand-count').textContent = gameState.hand.length;
+
+            document.getElementById('log-box').textContent = gameState.message;
+
+            // Render Habitats
+            ['processing', 'memory', 'chassis'].forEach(habitat => {
+                const container = document.getElementById(`${habitat}-slots`);
+                container.innerHTML = '';
+
+                gameState.playerBoard[habitat].forEach((card, slotIdx) => {
+                    const slotEl = document.createElement('div');
+                    let pasteSlotCost = 0;
+                    if (slotIdx === 1 || slotIdx === 2) pasteSlotCost = 1;
+                    if (slotIdx === 3 || slotIdx === 4) pasteSlotCost = 2;
+
+                    if (card) {
+                        slotEl.className = 'card-slot installed';
+                        slotEl.innerHTML = `
+                            <div class="card-header-row">
+                                <span class="card-name">${card.name}</span>
+                                <span class="card-vp">${card.vp} VP</span>
+                            </div>
+                            <div class="card-effect-desc">${card.effect}</div>
+                            <div class="card-tokens-row">
+                                <span style="color: var(--paste-color);">🧪 ${card.pasteCount || 0}</span>
+                                <span style="color: var(--accent-blue);">💾 ${card.tuckedCount || 0}</span>
+                            </div>
+                        `;
+                    } else {
+                        slotEl.className = 'card-slot';
+                        slotEl.innerHTML = `
+                            <div style="font-size: 0.75rem; color: var(--text-sub);">Empty Slot ${slotIdx + 1}</div>
+                            ${pasteSlotCost > 0 ? `<div class="card-slot empty-cost-badge">+${pasteSlotCost} 🧪</div>` : ''}
+                        `;
+                    }
+                    container.appendChild(slotEl);
+                });
+            });
+
+            // Render Market Display
+            document.getElementById('deck-count-val').textContent = gameState.deck.length;
+            const marketContainer = document.getElementById('market-display-row');
+            marketContainer.innerHTML = '';
+
+            gameState.market.forEach(card => {
+                const cardEl = createCardDisplayElement(card);
+                marketContainer.appendChild(cardEl);
+            });
+
+            // Render Hand
+            const handContainer = document.getElementById('hand-cards-row');
+            handContainer.innerHTML = '';
+
+            if (gameState.hand.length === 0) {
+                handContainer.innerHTML = '<div style="font-size: 0.85rem; color: var(--text-sub);">No component cards in hand.</div>';
+            } else {
+                gameState.hand.forEach(card => {
+                    const cardEl = createCardDisplayElement(card);
+                    handContainer.appendChild(cardEl);
+                });
+            }
+
+            // Benchmark summary
+            document.getElementById('benchmark-summary').innerHTML = `
+                <div><strong>Secret Objective:</strong> ${getBenchmarkTitle(gameState.benchmarkObjective)}</div>
+                <div><strong>Current Installed Parts:</strong> ${countTotalParts(gameState.playerBoard)} | <strong>Thermal Paste Placed:</strong> ${countTotalPaste(gameState.playerBoard)} 🧪 | <strong>Tucked Cards:</strong> ${countTotalTucked(gameState.playerBoard)} 💾</div>
+            `;
+        }
+
+        function createCardDisplayElement(card) {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card-slot installed';
+            cardEl.style.minWidth = '140px';
+
+            const costStr = Object.entries(card.cost).map(([k,v]) => `${v}${k[0].toUpperCase()}`).join(' ');
+
+            cardEl.innerHTML = `
+                <div class="card-header-row">
+                    <span class="card-name">${card.name}</span>
+                    <span class="card-vp">${card.vp} VP</span>
+                </div>
+                <div class="card-cost-list" style="color: var(--accent-blue);">Req: ${costStr}</div>
+                <div class="card-effect-desc">${card.effect}</div>
+            `;
+            return cardEl;
+        }
+
+        function getBenchmarkTitle(id) {
+            const titles = {
+                processing_guru: "Processing Power (+2 VP per Processing Part)",
+                storage_beast: "Storage Architect (+3 VP per Part with Tucked Data)",
+                thermal_king: "Liquid Cooled (+2 VP per Thermal Paste)",
+                efficiency_master: "Eco Build (+3 VP for Parts costing <= 1 Resource)"
+            };
+            return titles[id] || id;
+        }
+
+        function setMessage(msg) {
+            gameState.message = msg;
+            document.getElementById('log-box').textContent = msg;
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // STATE PERSISTENCE & LEADERBOARD
+        function saveStateToUrl() {
+            try {
+                const serialized = btoa(JSON.stringify(gameState));
+                history.replaceState(null, "", "#" + serialized);
+            } catch (e) {
+                console.error("Failed to save state to URL", e);
+            }
+        }
+
+        function loadStateFromUrl() {
+            const hash = window.location.hash.substring(1);
+            if (!hash) return false;
+            try {
+                const loaded = JSON.parse(atob(hash));
+                if (loaded && loaded.playerBoard) {
+                    gameState = loaded;
+                    return true;
+                }
+            } catch (e) {
+                console.error("Failed to load state from hash", e);
+            }
+            return false;
+        }
+
+        function saveScore(outcome, playerScore, automaScore) {
+            const scores = JSON.parse(localStorage.getItem('pcparts-leaderboard') || '[]');
+            scores.push({
+                playerScore,
+                automaScore,
+                outcome,
+                date: new Date().toLocaleDateString()
+            });
+            scores.sort((a, b) => b.playerScore - a.playerScore);
+            const top10 = scores.slice(0, 10);
+            localStorage.setItem('pcparts-leaderboard', JSON.stringify(top10));
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const scores = JSON.parse(localStorage.getItem('pcparts-leaderboard') || '[]');
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+
+            if (scores.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">No scores saved yet. Complete a rig benchmark!</td></tr>';
+                return;
+            }
+
+            scores.forEach((entry, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td style="font-weight:bold; color: var(--accent-green);">${entry.playerScore}</td>
+                    <td style="color: var(--accent-rose);">${entry.automaScore}</td>
+                    <td style="font-weight:bold; color: ${entry.outcome === 'Win' ? 'var(--accent-green)' : 'var(--accent-rose)'};">${entry.outcome}</td>
+                    <td>${entry.date}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // BINDINGS & INIT
+        document.getElementById('install-btn').onclick = openInstallModal;
+        document.getElementById('refresh-market-btn').onclick = () => {
+            if (gameState.deck.length >= 3) {
+                gameState.market = [gameState.deck.pop(), gameState.deck.pop(), gameState.deck.pop()];
+                setMessage("Reset market with 3 new component cards.");
+                updateUI();
+                saveStateToUrl();
+            }
+        };
+
+        document.getElementById('start-game-btn').onclick = () => {
+            const automaSel = document.getElementById('automa-select').value;
+            const benchSel = document.getElementById('benchmark-card-select').value;
+            closeModal('setup-modal');
+            initGame(automaSel, benchSel);
+        };
+
+        document.getElementById('play-again-btn').onclick = () => {
+            closeModal('game-over-modal');
+            history.replaceState(null, "", window.location.pathname);
+            document.getElementById('setup-modal').style.display = 'flex';
+        };
+
+        window.onload = () => {
+            if (loadStateFromUrl()) {
+                document.getElementById('setup-modal').style.display = 'none';
+                updateUI();
+                renderLeaderboard();
+            } else {
+                document.getElementById('setup-modal').style.display = 'flex';
+                renderLeaderboard();
+            }
+        };
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js')
+                    .then(reg => console.log('Service Worker registered', reg))
+                    .catch(err => console.log('Service Worker registration failed', err));
+            });
+        }
+    </script>
+</body>
+</html>
