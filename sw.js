@@ -1,4 +1,4 @@
-const CACHE_NAME = 'scoundrel-v2';
+const CACHE_NAME = 'scoundrel-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -6,6 +6,8 @@ const ASSETS = [
   './scoundrel/index.html',
   './the-mind/',
   './the-mind/index.html',
+  './mint-works/',
+  './mint-works/index.html',
   './split-flap/',
   './split-flap/index.html',
   './manifest.json',
